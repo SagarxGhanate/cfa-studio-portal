@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Member {
+  id            String    @id @default(uuid())
+  name          String
+  phone         String
+  age           Int
+  location      String
+  society       String?
+  joiningDate   DateTime
+  isActive      Boolean   @default(true)
+  classType     ClassType
+  category      Category
+  guardianName  String?
+  guardianPhone String?
+  adminId       String?
+  admin         Admin?    @relation(fields: [adminId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum ClassType {
+  PERSONAL
+  GROUP
+}
+
+enum Category {
+  KIDS
+  TODDLERS
+  ADULTS
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  avatar    String?
+  members   Member[]
+  createdAt DateTime @default(now())
+}

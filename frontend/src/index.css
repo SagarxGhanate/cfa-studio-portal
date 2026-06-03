@@ -1,0 +1,304 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card-surface {
+    background-color: #111118;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@layer base {
+  html {
+    overflow-y: scroll;
+  }
+  body {
+    background-color: #0A0A0F;
+    color: #e2e2e4;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    transition: background-color 0.35s ease, color 0.35s ease;
+  }
+
+  /* ============================================ */
+  /*         LIGHT MODE — GLOBAL OVERRIDES        */
+  /* ============================================ */
+  html.light body {
+    background-color: #F4F4F8;
+    color: #1a1a2e;
+  }
+
+  /* --- Page backgrounds --- */
+  html.light .bg-\[\#0A0A0F\],
+  html.light .bg-\[\#0a0a0f\] {
+    background-color: #F4F4F8 !important;
+  }
+  html.light .min-h-screen.bg-\[\#0A0A0F\] {
+    background-color: #F4F4F8 !important;
+  }
+
+  /* --- Card surfaces --- */
+  html.light .bg-\[\#111118\],
+  html.light .card-surface,
+  html.light .ultra-dark-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #9ca3af !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+  }
+
+  /* --- Input fields --- */
+  html.light .bg-\[\#16161F\],
+  html.light .bg-\[\#16161f\] {
+    background-color: #F0F0F5 !important;
+    border-color: #C8C8D0 !important;
+    color: #1a1a2e !important;
+  }
+  html.light input::placeholder,
+  html.light select::placeholder {
+    color: #999 !important;
+  }
+
+  /* --- Surface containers (used in charts, etc) --- */
+  html.light .bg-surface,
+  html.light .bg-surface\/80 {
+    background-color: rgba(255,255,255,0.9) !important;
+  }
+  html.light .bg-surface-container-high,
+  html.light .bg-surface-container-high\/30 {
+    background-color: #F0F0F5 !important;
+  }
+  html.light .bg-\[\#1a1a24\] {
+    background-color: #E0E0E8 !important;
+  }
+
+  /* --- Primary text (white → dark) --- */
+  html.light .text-white,
+  html.light .text-on-surface,
+  html.light .text-\[\#EEEEF0\],
+  html.light .text-\[\#eeeef0\] {
+    color: #1a1a2e !important;
+  }
+
+  /* --- Secondary text (light grey → dark grey) --- */
+  html.light .text-on-surface-variant,
+  html.light .text-\[\#6B6B80\],
+  html.light .text-\[\#6b6b80\],
+  html.light .text-\[\#e2bfb2\] {
+    color: #555566 !important;
+  }
+
+  /* --- Heading text must be very dark --- */
+  html.light h1, html.light h2, html.light h3 {
+    color: #0f0f1a !important;
+  }
+
+  /* --- Table header text --- */
+  html.light th {
+    color: #444455 !important;
+    border-color: #D8D8E0 !important;
+  }
+  html.light td {
+    color: #1a1a2e !important;
+    border-color: #ECECF0 !important;
+  }
+  html.light tr {
+    border-color: #ECECF0 !important;
+  }
+  html.light tbody tr:hover {
+    background-color: #F8F8FC !important;
+  }
+
+  /* --- Borders --- */
+  html.light .border-outline-variant,
+  html.light .border-\[rgba\(255\,255\,255\,0\.05\)\],
+  html.light .border-\[rgba\(255\,255\,255\,0\.06\)\],
+  html.light .border-\[rgba\(255\,255\,255\,0\.07\)\],
+  html.light .border-\[rgba\(255\,255\,255\,0\.08\)\] {
+    border-color: #9ca3af !important;
+  }
+  html.light .card-border {
+    border: 1px solid #9ca3af !important;
+  }
+  html.light .divider-white-05 {
+    border-color: #9ca3af !important;
+  }
+
+  /* --- Header/Navbar --- */
+  html.light header.sticky {
+    background-color: rgba(255, 255, 255, 0.88) !important;
+    border-color: #D0D0D8 !important;
+    backdrop-filter: blur(16px) !important;
+  }
+  html.light header span.font-bold {
+    color: #0f0f1a !important;
+  }
+
+  /* --- Bottom Nav --- */
+  html.light .fixed.bottom-0 {
+    background-color: rgba(255, 255, 255, 0.92) !important;
+    border-color: #D0D0D8 !important;
+    backdrop-filter: blur(16px) !important;
+  }
+  html.light .fixed.bottom-0 span.material-symbols-outlined {
+    color: #888 !important;
+  }
+  html.light .fixed.bottom-0 .text-primary {
+    color: #FF6B1A !important;
+  }
+
+  /* --- Stat cards glow / badge backgrounds --- */
+  html.light .bg-\[\#FF6B1A\]\/5,
+  html.light .bg-\[\#FF6B1A\]\/3 {
+    background-color: rgba(255, 107, 26, 0.04) !important;
+  }
+
+  /* --- Charts area --- */
+  html.light .recharts-cartesian-grid line {
+    stroke: #E0E0E8 !important;
+  }
+  html.light .recharts-text {
+    fill: #555566 !important;
+  }
+  html.light .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: #FFFFFF !important;
+    border-color: #D0D0D8 !important;
+    color: #1a1a2e !important;
+  }
+
+  /* --- Welcome banner / hero gradient --- */
+  html.light .bg-gradient-to-r.from-\[\#111118\] {
+    background: linear-gradient(to right, #E8E8F0, #F0F0F8) !important;
+  }
+  html.light .bg-gradient-to-br {
+    background: linear-gradient(to bottom right, #FFFFFF, #F0F0F8) !important;
+  }
+
+  /* --- Dropdown/Popup menus --- */
+  html.light .bg-\[\#111118\]\/95 {
+    background-color: rgba(255,255,255,0.96) !important;
+    border-color: #D0D0D8 !important;
+  }
+
+  /* --- Search input --- */
+  html.light input[type="text"],
+  html.light input[type="search"],
+  html.light input[type="email"],
+  html.light input[type="password"],
+  html.light input[type="tel"],
+  html.light input[type="number"],
+  html.light select,
+  html.light textarea {
+    background-color: #F0F0F5 !important;
+    border-color: #C8C8D0 !important;
+    color: #1a1a2e !important;
+  }
+  html.light input:focus,
+  html.light select:focus,
+  html.light textarea:focus {
+    border-color: #FF6B1A !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.1) !important;
+  }
+
+  /* --- Tags/Badges (Active, Inactive, Group, etc) --- */
+  html.light .dim-success {
+    background-color: rgba(74, 225, 118, 0.10) !important;
+    color: #0d8a3a !important;
+  }
+  html.light .dim-warning {
+    background-color: rgba(255, 181, 150, 0.12) !important;
+    color: #c44d00 !important;
+  }
+  html.light .dim-error {
+    background-color: rgba(255, 180, 171, 0.12) !important;
+    color: #c41a00 !important;
+  }
+
+  /* --- Danger Zone --- */
+  html.light .bg-\[\#1a1111\] {
+    background-color: #FFF5F5 !important;
+  }
+
+  /* --- Scrollbar in light mode --- */
+  html.light ::-webkit-scrollbar {
+    width: 8px;
+  }
+  html.light ::-webkit-scrollbar-track {
+    background: #F0F0F5;
+  }
+  html.light ::-webkit-scrollbar-thumb {
+    background: #C8C8D0;
+    border-radius: 4px;
+  }
+
+  /* --- Modal overlays (keep dark) --- */
+  html.light .fixed.inset-0.bg-black\/60,
+  html.light .fixed.inset-0.bg-black\/80 {
+    background-color: rgba(0,0,0,0.4) !important;
+  }
+
+  /* --- Filter popup --- */
+  html.light .bg-\[\#0A0A0F\],
+  html.light .bg-\[\#0a0a0f\] {
+    background-color: #FFFFFF !important;
+  }
+
+  /* --- Misc rgba white backgrounds → light equivalents --- */
+  html.light .bg-\[rgba\(255\,255\,255\,0\.03\)\],
+  html.light .bg-\[rgba\(255\,255\,255\,0\.05\)\],
+  html.light .bg-\[rgba\(255\,255\,255\,0\.06\)\] {
+    background-color: rgba(0,0,0,0.02) !important;
+  }
+  html.light .hover\:bg-\[rgba\(255\,255\,255\,0\.06\)\]:hover,
+  html.light .hover\:bg-\[rgba\(255\,255\,255\,0\.08\)\]:hover,
+  html.light .hover\:bg-white\/5:hover {
+    background-color: rgba(0,0,0,0.04) !important;
+  }
+
+  /* --- Shadow adjustments --- */
+  html.light .shadow-\[0_8px_32px_rgba\(0\,0\,0\,0\.2\)\],
+  html.light .shadow-\[0_8px_32px_rgba\(0\,0\,0\,0\.4\)\],
+  html.light .shadow-\[0_10px_40px_rgba\(0\,0\,0\,0\.3\)\],
+  html.light .shadow-\[0_8px_20px_rgba\(0\,0\,0\,0\.2\)\] {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+  }
+}
+
+/* Filter popup animations */
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loadBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
