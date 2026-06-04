@@ -29,6 +29,11 @@ const login = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'Unauthorized', message: 'Invalid credentials' });
     }
 
+    const updatedAdmin = await prisma.admin.update({
+      where: { id: admin.id },
+      data: { loginCount: { increment: 1 } }
+    });
+
     const token = jwt.sign({ id: admin.id, email: admin.email }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
@@ -46,6 +51,7 @@ const login = async (req, res, next) => {
           avatar: admin.avatar || null,
           role: admin.role,
           teamId: admin.teamId,
+          loginCount: updatedAdmin.loginCount,
         }
       },
       message: 'Login successful'
@@ -82,6 +88,7 @@ const register = async (req, res, next) => {
         password: hashedPassword,
         name: name || 'Admin User',
         role: 'OWNER',
+        loginCount: 1,
       }
     });
 
@@ -100,6 +107,7 @@ const register = async (req, res, next) => {
           avatar: admin.avatar || null,
           role: admin.role,
           teamId: null,
+          loginCount: 1,
         }
       },
       message: 'Registration successful'
@@ -289,6 +297,11 @@ const googleLogin = async (req, res, next) => {
       });
     }
 
+    const updatedAdmin = await prisma.admin.update({
+      where: { id: admin.id },
+      data: { loginCount: { increment: 1 } }
+    });
+
     const token = jwt.sign({ id: admin.id, email: admin.email }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
@@ -302,10 +315,11 @@ const googleLogin = async (req, res, next) => {
         user: {
           id: admin.id,
           email: admin.email,
-          name: admin.name || 'Admin User',
-          avatar: admin.avatar || null,
-          role: admin.role,
-          teamId: admin.teamId,
+          name: updatedAdmin.name || 'Admin User',
+          avatar: updatedAdmin.avatar || null,
+          role: updatedAdmin.role,
+          teamId: updatedAdmin.teamId,
+          loginCount: updatedAdmin.loginCount,
         }
       },
       message: 'Google login successful'

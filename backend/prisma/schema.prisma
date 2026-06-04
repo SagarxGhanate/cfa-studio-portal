@@ -53,6 +53,7 @@ model Admin {
   name             String?
   avatar           String?
   role             Role       @default(OWNER)
+  loginCount       Int        @default(0)
   teamId           String?    // Links MANAGER/VIEWER to OWNER's id
   team             Admin?     @relation("TeamMembers", fields: [teamId], references: [id])
   teamMembers      Admin[]    @relation("TeamMembers")
