@@ -79,7 +79,7 @@ const Login = () => {
       
       {/* Login Success Overlay */}
       {showSuccess && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0A0A0F]">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0e0e0e]">
           <div className="flex flex-col items-center animate-fadeIn">
             {/* Animated checkmark */}
             <div className="w-20 h-20 rounded-full bg-[#4ae176]/10 flex items-center justify-center mb-6 border-2 border-[#4ae176]/30 relative">
@@ -89,8 +89,8 @@ const Login = () => {
             <h2 className="text-[22px] font-bold text-white mb-2">Welcome Back!</h2>
             <p className="text-[14px] text-[#6B6B80]">Login successful. Redirecting to dashboard...</p>
             {/* Loader bar */}
-            <div className="mt-6 w-48 h-1 bg-[#1a1a24] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#4ae176] to-[#FF6B1A] rounded-full animate-[loadBar_1.5s_ease-in-out_forwards]"></div>
+            <div className="mt-6 w-48 h-1 bg-[#333333] rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#4ae176] to-[#f97316] rounded-full animate-[loadBar_1.5s_ease-in-out_forwards]"></div>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ const Login = () => {
       {/* Logout Success Toast */}
       {showLogoutSuccess && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] animate-fadeIn">
-          <div className="flex items-center gap-3 bg-[#111118] border border-[rgba(255,255,255,0.08)] rounded-xl px-5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center gap-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-xl px-5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
             <div className="w-8 h-8 rounded-full bg-[#4ae176]/10 flex items-center justify-center border border-[#4ae176]/20">
               <span className="material-symbols-outlined text-[18px] text-[#4ae176]">check</span>
             </div>
@@ -113,11 +113,11 @@ const Login = () => {
       
       {/* Main Login Canvas */}
       <main className="relative z-10 w-full max-w-[400px]">
-        <div className="bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-[16px] px-[24px] py-[32px] w-full">
+        <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-[16px] px-[24px] py-[32px] w-full">
           {/* Header Section */}
           <div className="mb-8 text-center sm:text-left">
             <h1 className="font-display-lg text-[28px] leading-tight tracking-tight text-white mb-1">
-              CFA<span className="text-[#FF6B1A]"> Studio</span>
+              CFA<span className="text-[#f97316]"> Studio</span>
             </h1>
             <p className="font-body-md text-[13px] text-[#6B6B80] font-medium">
               Admin Portal
@@ -138,7 +138,7 @@ const Login = () => {
               </label>
               <input 
                 {...register('email', { required: 'Email is required' })}
-                className="bg-[#16161F] border border-[rgba(255,255,255,0.08)] focus:border-[#FF6B1A] focus:ring-[3px] focus:ring-[#FF6B1A]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
+                className="bg-[#262626] border border-[rgba(255,255,255,0.08)] focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
                 id="email" 
                 placeholder="admin@cfastudio.com" 
                 type="email"
@@ -153,7 +153,7 @@ const Login = () => {
               <div className="relative">
                 <input 
                   {...register('password', { required: 'Password is required' })}
-                  className="w-full bg-[#16161F] border border-[rgba(255,255,255,0.08)] focus:border-[#FF6B1A] focus:ring-[3px] focus:ring-[#FF6B1A]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
+                  className="w-full bg-[#262626] border border-[rgba(255,255,255,0.08)] focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
                   id="password" 
                   placeholder="••••••••" 
                   type="password"
@@ -165,7 +165,7 @@ const Login = () => {
             
             <button 
               disabled={loading || showSuccess}
-              className="w-full h-[40px] bg-[#FF6B1A] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-[8px] mt-2 font-label-md text-[14px] text-white disabled:opacity-70 flex items-center justify-center gap-2" 
+              className="w-full h-[40px] bg-[#f97316] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-[8px] mt-2 font-label-md text-[14px] text-white disabled:opacity-70 flex items-center justify-center gap-2" 
               type="submit"
             >
               {loading ? (
@@ -205,11 +205,11 @@ const Login = () => {
           <div className="mt-6 flex flex-col items-center gap-2">
             <div>
               <span className="font-body-md text-[13px] text-[#6B6B80]">Don't have an account? </span>
-              <Link to="/signup" className="font-body-md text-[13px] text-[#FF6B1A] hover:text-[#e85a0d] transition-colors font-bold">
+              <Link to="/signup" className="font-body-md text-[13px] text-[#f97316] hover:text-[#e85a0d] transition-colors font-bold">
                 Sign Up
               </Link>
             </div>
-            <a className="font-body-md text-[13px] text-[#6B6B80] hover:text-[#FF6B1A] transition-colors" href="#">
+            <a className="font-body-md text-[13px] text-[#6B6B80] hover:text-[#f97316] transition-colors" href="#">
               Forgot password?
             </a>
           </div>

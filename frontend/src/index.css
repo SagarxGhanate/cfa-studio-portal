@@ -4,7 +4,7 @@
 
 @layer components {
   .card-surface {
-    background-color: #111118;
+    background-color: #1a1a1a;
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
@@ -14,7 +14,7 @@
     overflow-y: scroll;
   }
   body {
-    background-color: #0A0A0F;
+    background-color: #0e0e0e;
     color: #e2e2e4;
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -31,16 +31,16 @@
   }
 
   /* --- Page backgrounds --- */
-  html.light .bg-\[\#0A0A0F\],
-  html.light .bg-\[\#0a0a0f\] {
+  html.light .bg-\[\#0e0e0e\],
+  html.light .bg-\[\#0e0e0e\] {
     background-color: #F4F4F8 !important;
   }
-  html.light .min-h-screen.bg-\[\#0A0A0F\] {
+  html.light .min-h-screen.bg-\[\#0e0e0e\] {
     background-color: #F4F4F8 !important;
   }
 
   /* --- Card surfaces --- */
-  html.light .bg-\[\#111118\],
+  html.light .bg-\[\#1a1a1a\],
   html.light .card-surface,
   html.light .ultra-dark-card {
     background-color: #FFFFFF !important;
@@ -49,8 +49,8 @@
   }
 
   /* --- Input fields --- */
-  html.light .bg-\[\#16161F\],
-  html.light .bg-\[\#16161f\] {
+  html.light .bg-\[\#262626\],
+  html.light .bg-\[\#262626\] {
     background-color: #F0F0F5 !important;
     border-color: #C8C8D0 !important;
     color: #1a1a2e !important;
@@ -69,7 +69,7 @@
   html.light .bg-surface-container-high\/30 {
     background-color: #F0F0F5 !important;
   }
-  html.light .bg-\[\#1a1a24\] {
+  html.light .bg-\[\#333333\] {
     background-color: #E0E0E8 !important;
   }
 
@@ -145,12 +145,12 @@
     color: #888 !important;
   }
   html.light .fixed.bottom-0 .text-primary {
-    color: #FF6B1A !important;
+    color: #f97316 !important;
   }
 
   /* --- Stat cards glow / badge backgrounds --- */
-  html.light .bg-\[\#FF6B1A\]\/5,
-  html.light .bg-\[\#FF6B1A\]\/3 {
+  html.light .bg-\[\#f97316\]\/5,
+  html.light .bg-\[\#f97316\]\/3 {
     background-color: rgba(255, 107, 26, 0.04) !important;
   }
 
@@ -168,7 +168,7 @@
   }
 
   /* --- Welcome banner / hero gradient --- */
-  html.light .bg-gradient-to-r.from-\[\#111118\] {
+  html.light .bg-gradient-to-r.from-\[\#1a1a1a\] {
     background: linear-gradient(to right, #E8E8F0, #F0F0F8) !important;
   }
   html.light .bg-gradient-to-br {
@@ -176,7 +176,7 @@
   }
 
   /* --- Dropdown/Popup menus --- */
-  html.light .bg-\[\#111118\]\/95 {
+  html.light .bg-\[\#1a1a1a\]\/95 {
     background-color: rgba(255,255,255,0.96) !important;
     border-color: #D0D0D8 !important;
   }
@@ -197,7 +197,7 @@
   html.light input:focus,
   html.light select:focus,
   html.light textarea:focus {
-    border-color: #FF6B1A !important;
+    border-color: #f97316 !important;
     box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.1) !important;
   }
 
@@ -239,8 +239,8 @@
   }
 
   /* --- Filter popup --- */
-  html.light .bg-\[\#0A0A0F\],
-  html.light .bg-\[\#0a0a0f\] {
+  html.light .bg-\[\#0e0e0e\],
+  html.light .bg-\[\#0e0e0e\] {
     background-color: #FFFFFF !important;
   }
 

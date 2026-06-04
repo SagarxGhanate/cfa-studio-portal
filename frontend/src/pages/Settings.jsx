@@ -1,14 +1,18 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import BottomNav from '../components/layout/BottomNav';
 import { useToast } from '../components/ui/Toast';
 import useThemeStore from '../store/themeStore';
+import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
 const Settings = () => {
   const toast = useToast();
   const { theme, toggleTheme } = useThemeStore();
   const isDark = theme === 'dark';
+  const user = useAuthStore((s) => s.user);
+  const isOwner = user?.role === 'OWNER';
   const [passwords, setPasswords] = useState({ current: '', newPass: '', confirm: '' });
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +44,7 @@ const Settings = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-[#0A0A0F]' : 'bg-[#F5F5F7]'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-[#0e0e0e]' : 'bg-[#F5F5F7]'}`}>
       <Navbar />
 
       <main className="max-w-[1440px] mx-auto px-container-margin py-8 pb-24">
@@ -51,7 +55,7 @@ const Settings = () => {
 
         <div className="max-w-[600px] mx-auto space-y-6">
           {/* Preferences */}
-          <div className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#111118] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
+          <div className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
             <div className={`border-b pb-3 mb-6 ${isDark ? 'border-[rgba(255,255,255,0.05)]' : 'border-[rgba(0,0,0,0.06)]'}`}>
               <h3 className="text-[13px] uppercase tracking-wider text-[#6B6B80] font-bold">App Preferences</h3>
             </div>
@@ -59,7 +63,7 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors duration-300 ${isDark ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.05)]' : 'bg-[#F0F0F5] border-[rgba(0,0,0,0.06)]'}`}>
-                  <span className={`material-symbols-outlined text-[20px] ${isDark ? 'text-[#e2e2e4]' : 'text-[#FF6B1A]'}`}>
+                  <span className={`material-symbols-outlined text-[20px] ${isDark ? 'text-[#e2e2e4]' : 'text-[#f97316]'}`}>
                     {isDark ? 'dark_mode' : 'light_mode'}
                   </span>
                 </div>
@@ -76,7 +80,7 @@ const Settings = () => {
               {/* Custom Toggle Switch */}
               <button 
                 onClick={toggleTheme}
-                className={`relative w-12 h-[26px] rounded-full transition-all duration-300 ${isDark ? 'bg-[#FF6B1A]' : 'bg-[#d1d5db]'}`}
+                className={`relative w-12 h-[26px] rounded-full transition-all duration-300 ${isDark ? 'bg-[#f97316]' : 'bg-[#d1d5db]'}`}
               >
                 <div className={`absolute top-[3px] w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? 'left-[26px]' : 'left-[3px]'}`}></div>
               </button>
@@ -84,7 +88,7 @@ const Settings = () => {
           </div>
 
           {/* Change Password */}
-          <form onSubmit={handlePasswordChange} className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#111118] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
+          <form onSubmit={handlePasswordChange} className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
             <div className={`border-b pb-2 mb-5 ${isDark ? 'border-[rgba(255,255,255,0.05)]' : 'border-[rgba(0,0,0,0.06)]'}`}>
               <h3 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Change Password</h3>
             </div>
@@ -95,7 +99,7 @@ const Settings = () => {
                   type="password"
                   value={passwords.current}
                   onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#FF6B1A]/30 focus:border-[#FF6B1A] ${isDark ? 'bg-[#16161F] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
+                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
                   placeholder="••••••••"
                   required
                 />
@@ -106,7 +110,7 @@ const Settings = () => {
                   type="password"
                   value={passwords.newPass}
                   onChange={(e) => setPasswords({ ...passwords, newPass: e.target.value })}
-                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#FF6B1A]/30 focus:border-[#FF6B1A] ${isDark ? 'bg-[#16161F] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
+                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
                   placeholder="At least 6 characters"
                   required
                 />
@@ -117,7 +121,7 @@ const Settings = () => {
                   type="password"
                   value={passwords.confirm}
                   onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#FF6B1A]/30 focus:border-[#FF6B1A] ${isDark ? 'bg-[#16161F] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
+                  className={`w-full h-[40px] rounded-xl px-3 outline-none transition-all focus:ring-2 focus:ring-[#f97316]/30 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-[#EEEEF0]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
                   placeholder="Re-enter new password"
                   required
                 />
@@ -125,15 +129,42 @@ const Settings = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[40px] bg-[#FF6B1A] text-white font-bold rounded-xl hover:bg-[#e85a0d] active:scale-[0.98] transition-all disabled:opacity-70 mt-2 shadow-[0_4px_14px_rgba(255,107,26,0.3)]"
+                className="w-full h-[40px] bg-[#f97316] text-white font-bold rounded-xl hover:bg-[#e85a0d] active:scale-[0.98] transition-all disabled:opacity-70 mt-2 shadow-[0_4px_14px_rgba(255,107,26,0.3)]"
               >
                 {loading ? 'Updating...' : 'Update Password'}
               </button>
             </div>
           </form>
 
+          {/* Team & Audit Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link 
+              to="/audit-log"
+              className={`rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:scale-[1.02] ${isDark ? 'bg-[#1a1a1a] border border-[#f97316]/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[#f97316]/20 shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}
+            >
+              <div className="w-10 h-10 rounded-full bg-[#f97316]/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[20px] text-[#f97316]">history</span>
+              </div>
+              <h3 className={`text-[15px] font-bold mt-1 ${isDark ? 'text-white' : 'text-[#1a1a2e]'}`}>Activity Log</h3>
+              <p className={`text-[12px] ${isDark ? 'text-on-surface-variant' : 'text-[#6B6B80]'}`}>Track all actions performed in your studio</p>
+            </Link>
+
+            {isOwner && (
+              <Link 
+                to="/team"
+                className={`rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:scale-[1.02] ${isDark ? 'bg-[#1a1a1a] border border-[#f97316]/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[#f97316]/20 shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}
+              >
+                <div className="w-10 h-10 rounded-full bg-[#f97316]/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px] text-[#f97316]">group</span>
+                </div>
+                <h3 className={`text-[15px] font-bold mt-1 ${isDark ? 'text-white' : 'text-[#1a1a2e]'}`}>Team Management</h3>
+                <p className={`text-[12px] ${isDark ? 'text-on-surface-variant' : 'text-[#6B6B80]'}`}>Invite managers and viewers to help out</p>
+              </Link>
+            )}
+          </div>
+
           {/* App Info */}
-          <div className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#111118] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
+          <div className={`rounded-2xl p-6 transition-colors duration-300 ${isDark ? 'bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.2)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.06)]'}`}>
             <div className={`border-b pb-2 mb-5 ${isDark ? 'border-[rgba(255,255,255,0.05)]' : 'border-[rgba(0,0,0,0.06)]'}`}>
               <h3 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Application</h3>
             </div>

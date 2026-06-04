@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
@@ -22,12 +22,39 @@ const AddMember = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
   const [error, setError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const avatarInputRef = useRef(null);
   const navigate = useNavigate();
   const toast = useToast();
 
   const classType = watch('classType');
   const category = watch('category');
   const isActive = watch('isActive');
+
+  // Read image in original size and quality (no compression)
+  const getOriginalImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
+      return;
+    }
+    const original = await getOriginalImage(file);
+    setAvatarPreview(original);
+  };
+
+  const removeAvatar = () => {
+    setAvatarPreview(null);
+    if (avatarInputRef.current) avatarInputRef.current.value = '';
+  };
 
   // Fetch existing member data for edit mode
   useEffect(() => {
@@ -53,6 +80,7 @@ const AddMember = () => {
             guardianName: m.guardianName || '',
             guardianPhone: m.guardianPhone || '',
           });
+          if (m.avatar) setAvatarPreview(m.avatar);
         }
       } catch (err) {
         toast.error('Failed to load member data');
@@ -71,6 +99,7 @@ const AddMember = () => {
       const payload = {
         ...data,
         age: parseInt(data.age, 10),
+        avatar: avatarPreview || null,
       };
       
       if (isEditMode) {
@@ -98,18 +127,18 @@ const AddMember = () => {
   // Show skeleton loader while fetching member data in edit mode
   if (fetching) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#0A0A0F] pb-[80px] md:pb-0">
+      <div className="min-h-screen flex flex-col bg-[#0e0e0e] pb-[80px] md:pb-0">
         <Navbar />
         <main className="flex-1 px-container-margin py-6 flex flex-col gap-6 max-w-[600px] mx-auto w-full">
           <div className="flex flex-col gap-1">
-            <div className="h-4 w-20 bg-[#1a1a24] rounded animate-pulse"></div>
-            <div className="h-7 w-48 bg-[#1a1a24] rounded animate-pulse mt-1"></div>
+            <div className="h-4 w-20 bg-[#333333] rounded animate-pulse"></div>
+            <div className="h-7 w-48 bg-[#333333] rounded animate-pulse mt-1"></div>
           </div>
-          <div className="bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-6 flex flex-col gap-6">
+          <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-6 flex flex-col gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex flex-col gap-1.5">
-                <div className="h-3 w-20 bg-[#1a1a24] rounded animate-pulse"></div>
-                <div className="h-[40px] w-full bg-[#1a1a24] rounded-[8px] animate-pulse"></div>
+                <div className="h-3 w-20 bg-[#333333] rounded animate-pulse"></div>
+                <div className="h-[40px] w-full bg-[#333333] rounded-[8px] animate-pulse"></div>
               </div>
             ))}
           </div>
@@ -120,7 +149,7 @@ const AddMember = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0F] pb-[80px] md:pb-0">
+    <div className="min-h-screen flex flex-col bg-[#0e0e0e] pb-[80px] md:pb-0">
       <Navbar />
       
       <main className="flex-1 px-container-margin py-6 flex flex-col gap-6 max-w-[600px] mx-auto w-full">
@@ -138,10 +167,43 @@ const AddMember = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-6 flex flex-col gap-8 w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-6 flex flex-col gap-8 w-full">
           <section className="flex flex-col">
             <div className="border-b border-outline-variant pb-2 mb-4">
               <h3 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Personal Information</h3>
+            </div>
+            
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center gap-3 mb-6">
+              <div 
+                className="relative w-[80px] h-[80px] rounded-full cursor-pointer group"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-full h-full rounded-full object-cover border-2 border-primary-container/40" />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-[#262626] border-2 border-dashed border-outline-variant flex items-center justify-center group-hover:border-primary-container/50 transition-colors">
+                    <span className="material-symbols-outlined text-[28px] text-[#6B6B80] group-hover:text-primary-container transition-colors">add_a_photo</span>
+                  </div>
+                )}
+                <div className="absolute bottom-0 right-0 w-6 h-6 bg-primary-container rounded-full flex items-center justify-center border-2 border-[#1a1a1a]">
+                  <span className="material-symbols-outlined text-[14px] text-white">{avatarPreview ? 'edit' : 'add'}</span>
+                </div>
+              </div>
+              <input 
+                ref={avatarInputRef}
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleAvatarChange}
+              />
+              {avatarPreview ? (
+                <button type="button" onClick={removeAvatar} className="text-[12px] text-red-400 hover:text-red-300 transition-colors">
+                  Remove photo
+                </button>
+              ) : (
+                <p className="text-[12px] text-[#6B6B80]">Add member photo</p>
+              )}
             </div>
             
             <div className="flex flex-col gap-4">
@@ -149,7 +211,7 @@ const AddMember = () => {
                 <label className="text-[12px] font-medium text-[#6B6B80]">Full Name</label>
                 <input 
                   {...register('name', { required: 'Name is required' })}
-                  className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                  className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                   type="text" 
                   placeholder="Jonathan Wick"
                 />
@@ -160,7 +222,7 @@ const AddMember = () => {
                 <label className="text-[12px] font-medium text-[#6B6B80]">Phone Number</label>
                 <input 
                   {...register('phone', { required: 'Phone is required' })}
-                  className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                  className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                   type="tel" 
                   placeholder="+1 (555) 012"
                 />
@@ -172,7 +234,7 @@ const AddMember = () => {
                   <label className="text-[12px] font-medium text-[#6B6B80]">Age</label>
                   <input 
                     {...register('age', { required: 'Age is required', min: 1 })}
-                    className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                    className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                     type="number" 
                     placeholder="28"
                   />
@@ -183,7 +245,7 @@ const AddMember = () => {
                   <label className="text-[12px] font-medium text-[#6B6B80]">Location</label>
                   <input 
                     {...register('location', { required: 'Location is required' })}
-                    className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                    className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                     type="text" 
                     placeholder="Mumbai, India"
                   />
@@ -223,7 +285,7 @@ const AddMember = () => {
 
               <div className="flex flex-col gap-2">
                 <label className="text-[12px] font-medium text-[#6B6B80]">Class Type</label>
-                <div className="grid grid-cols-2 bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
+                <div className="grid grid-cols-2 bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
                   <button 
                     type="button"
                     onClick={() => setValue('classType', 'PERSONAL')}
@@ -239,7 +301,7 @@ const AddMember = () => {
 
               <div className="flex flex-col gap-2">
                 <label className="text-[12px] font-medium text-[#6B6B80]">Category</label>
-                <div className="grid grid-cols-3 bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
+                <div className="grid grid-cols-3 bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
                   {['KIDS', 'TODDLERS', 'ADULTS'].map((cat) => (
                     <button 
                       key={cat}
@@ -256,7 +318,7 @@ const AddMember = () => {
                 <div className="relative">
                   <input 
                     {...register('joiningDate', { required: 'Date is required' })}
-                    className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all [color-scheme:dark]" 
+                    className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all [color-scheme:dark]" 
                     type="date"
                   />
                 </div>
@@ -283,7 +345,7 @@ const AddMember = () => {
                 </label>
                 <input 
                   {...register('guardianName')}
-                  className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                  className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                   type="text" 
                   placeholder="Parent or guardian's full name"
                 />
@@ -296,7 +358,7 @@ const AddMember = () => {
                 </label>
                 <input 
                   {...register('guardianPhone')}
-                  className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
+                  className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all" 
                   type="tel" 
                   placeholder="+91 98765 43210"
                 />

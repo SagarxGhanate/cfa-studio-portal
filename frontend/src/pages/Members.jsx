@@ -1,12 +1,18 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import BottomNav from '../components/layout/BottomNav';
 import MemberFilters from '../components/members/MemberFilters';
 import { useToast } from '../components/ui/Toast';
+import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
 const Members = () => {
+  const user = useAuthStore((s) => s.user);
+  const isViewer = user?.role === 'VIEWER';
+  const isOwner = user?.role === 'OWNER';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -28,13 +34,31 @@ const Members = () => {
   const addMenuRef = useRef(null);
   const navigate = useNavigate();
   const toast = useToast();
-  const [filters, setFilters] = useState({
-    location: '',
-    society: '',
-    classType: '',
-    category: '',
-    status: '',
+
+  // Initialize filters from URL params (for Dashboard drill-down)
+  const [filters, setFilters] = useState(() => {
+    return {
+      location: '',
+      society: '',
+      classType: searchParams.get('classType') || '',
+      category: searchParams.get('category') || '',
+      status: searchParams.get('status') || '',
+    };
   });
+
+  // Sync filters when URL params change (e.g. navigating from Dashboard)
+  useEffect(() => {
+    const urlClassType = searchParams.get('classType') || '';
+    const urlCategory = searchParams.get('category') || '';
+    const urlStatus = searchParams.get('status') || '';
+    
+    setFilters(prev => ({
+      ...prev,
+      classType: urlClassType,
+      category: urlCategory,
+      status: urlStatus,
+    }));
+  }, [location.search]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -226,13 +250,84 @@ const Members = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#0e0e0e]">
       <Navbar />
 
       <main className="max-w-[1440px] mx-auto px-container-margin py-8 pb-24">
+
+        {/* ━━━ Filter Context Banner ━━━ */}
+        {(searchParams.get('status') || searchParams.get('classType') || searchParams.get('category')) && (
+          <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#1a1a1a] to-[#1a1a1a] border border-white/[0.06] overflow-hidden">
+            <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary-container text-[20px]">
+                    {searchParams.get('classType') === 'PERSONAL' ? 'fitness_center' : 
+                     searchParams.get('classType') === 'GROUP' ? 'groups' : 
+                     searchParams.get('status') === 'active' ? 'bolt' : 'filter_list'}
+                  </span>
+                </div>
+                <div>
+                  <h2 className="text-[16px] font-bold text-[#e5e2e1] font-headline">
+                    {searchParams.get('classType') === 'PERSONAL' ? 'Personal Training' :
+                     searchParams.get('classType') === 'GROUP' ? 'Group Training' :
+                     searchParams.get('status') === 'active' ? 'Active Members' :
+                     searchParams.get('status') === 'inactive' ? 'Inactive Members' : 'Filtered View'}
+                  </h2>
+                  <p className="text-[12px] text-[#78716c]">
+                    {totalCount > 0 ? `${members.length} member${members.length !== 1 ? 's' : ''} found` : 'Loading...'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Status toggle tabs when viewing Active/Inactive */}
+                {(searchParams.get('status') || (!searchParams.get('classType') && !searchParams.get('category'))) && (
+                  <div className="flex items-center bg-[#0e0e0e] rounded-lg p-1 border border-white/[0.04]">
+                    <button
+                      onClick={() => { setSearchParams({ status: 'active' }); }}
+                      className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all ${
+                        filters.status === 'active' 
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
+                          : 'text-[#78716c] hover:text-[#a8a29e]'
+                      }`}
+                    >
+                      Active
+                    </button>
+                    <button
+                      onClick={() => { setSearchParams({ status: 'inactive' }); }}
+                      className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all ${
+                        filters.status === 'inactive' 
+                          ? 'bg-red-500/15 text-red-400 border border-red-500/20' 
+                          : 'text-[#78716c] hover:text-[#a8a29e]'
+                      }`}
+                    >
+                      Inactive
+                    </button>
+                  </div>
+                )}
+
+                <Link 
+                  to="/members" 
+                  className="px-3.5 py-1.5 rounded-lg text-[12px] font-bold text-[#78716c] hover:text-[#e5e2e1] hover:bg-white/[0.04] transition-all flex items-center gap-1.5 border border-white/[0.04]"
+                >
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                  Clear Filter
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div>
-            <h1 className="font-display-lg text-display-lg text-on-surface">CFA Members</h1>
+            <h1 className="font-display-lg text-display-lg text-on-surface">
+              {searchParams.get('classType') === 'PERSONAL' ? 'Personal Training Members' :
+               searchParams.get('classType') === 'GROUP' ? 'Group Training Members' :
+               searchParams.get('status') === 'active' ? 'Active Members' :
+               searchParams.get('status') === 'inactive' ? 'Inactive Members' :
+               'CFA Members'}
+            </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">
               {totalCount > 0 ? `${totalCount} total members` : 'Manage studio residents, access levels, and billing cycles.'}
             </p>
@@ -241,7 +336,7 @@ const Members = () => {
             <div className="relative group">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
               <input
-                className="bg-[#111118] border border-outline-variant rounded-lg pl-10 pr-4 py-2 w-full md:w-64 focus:border-primary-container focus:ring-0 transition-colors font-body-md text-body-md text-on-surface outline-none"
+                className="bg-[#1a1a1a] border border-outline-variant rounded-lg pl-10 pr-4 py-2 w-full md:w-64 focus:border-primary-container focus:ring-0 transition-colors font-body-md text-body-md text-on-surface outline-none"
                 placeholder="Search members..."
                 type="text"
                 value={search}
@@ -250,22 +345,24 @@ const Members = () => {
             </div>
 
             {/* Select Mode Toggle */}
-            <button
-              onClick={handleToggleSelectMode}
-              className={`relative p-2 rounded-lg transition-colors flex items-center justify-center border ${
-                selectMode
-                  ? 'bg-primary-container/20 border-primary-container/40 text-primary-container'
-                  : 'bg-[#111118] border-outline-variant text-on-surface-variant hover:bg-surface-container-high'
-              }`}
-              title={selectMode ? 'Exit select mode' : 'Select members'}
-            >
-              <span className="material-symbols-outlined">{selectMode ? 'close' : 'checklist'}</span>
-            </button>
+            {!isViewer && (
+              <button
+                onClick={handleToggleSelectMode}
+                className={`relative p-2 rounded-lg transition-colors flex items-center justify-center border ${
+                  selectMode
+                    ? 'bg-primary-container/20 border-primary-container/40 text-primary-container'
+                    : 'bg-[#1a1a1a] border-outline-variant text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+                title={selectMode ? 'Exit select mode' : 'Select members'}
+              >
+                <span className="material-symbols-outlined">{selectMode ? 'close' : 'checklist'}</span>
+              </button>
+            )}
 
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(true)}
-              className="relative bg-[#111118] border border-outline-variant p-2 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center"
+              className="relative bg-[#1a1a1a] border border-outline-variant p-2 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center"
             >
               <span className="material-symbols-outlined text-on-surface-variant">filter_list</span>
               {activeFilterCount > 0 && (
@@ -276,37 +373,39 @@ const Members = () => {
             </button>
 
             {/* Add Member Dropdown */}
-            <div className="relative" ref={addMenuRef}>
-              <button
-                onClick={() => setShowAddMenu(prev => !prev)}
-                className="bg-primary-container text-on-primary font-label-md text-label-md px-4 py-2 h-[36px] rounded-lg font-bold hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                <span className="hidden sm:inline">Add Member</span>
-                <span className="material-symbols-outlined text-[16px] ml-0.5">expand_more</span>
-              </button>
+            {!isViewer && (
+              <div className="relative" ref={addMenuRef}>
+                <button
+                  onClick={() => setShowAddMenu(prev => !prev)}
+                  className="bg-primary-container text-on-primary font-label-md text-label-md px-4 py-2 h-[36px] rounded-lg font-bold hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span className="hidden sm:inline">Add Member</span>
+                  <span className="material-symbols-outlined text-[16px] ml-0.5">expand_more</span>
+                </button>
 
-              {showAddMenu && (
-                <div className="absolute right-0 mt-2 w-[220px] bg-[#111118] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
-                  <Link
-                    to="/members/add"
-                    onClick={() => setShowAddMenu(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium border-b border-[rgba(255,255,255,0.05)]"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-primary-container">person_add</span>
-                    Add Manually
-                  </Link>
-                  <Link
-                    to="/members/import"
-                    onClick={() => setShowAddMenu(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-secondary">upload_file</span>
-                    Import from Excel
-                  </Link>
-                </div>
-              )}
-            </div>
+                {showAddMenu && (
+                  <div className="absolute right-0 mt-2 w-[220px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
+                    <Link
+                      to="/members/add"
+                      onClick={() => setShowAddMenu(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium border-b border-[rgba(255,255,255,0.05)]"
+                    >
+                      <span className="material-symbols-outlined text-[18px] text-primary-container">person_add</span>
+                      Add Manually
+                    </Link>
+                    <Link
+                      to="/members/import"
+                      onClick={() => setShowAddMenu(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[18px] text-secondary">upload_file</span>
+                      Import from Excel
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -370,7 +469,7 @@ const Members = () => {
 
         {/* Selection action bar */}
         {selectMode && (
-          <div className="mb-4 flex items-center gap-3 bg-[#111118] border border-outline-variant rounded-xl px-4 py-3 animate-fadeIn">
+          <div className="mb-4 flex items-center gap-3 bg-[#1a1a1a] border border-outline-variant rounded-xl px-4 py-3 animate-fadeIn">
             <button
               onClick={handleSelectAll}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors border ${
@@ -421,40 +520,42 @@ const Members = () => {
                   <th className="px-card-padding-x py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Society</th>
                   <th className="px-card-padding-x py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Class Type</th>
                   <th className="px-card-padding-x py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Category</th>
-                  <th className="px-card-padding-x py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                  {!isViewer && (
+                    <th className="px-card-padding-x py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/50">
                 {loading ? (
                   [...Array(5)].map((_, i) => (
                     <tr key={i}>
-                      {selectMode && <td className="px-3 py-4"><div className="w-5 h-5 bg-[#1a1a24] rounded animate-pulse"></div></td>}
+                      {selectMode && <td className="px-3 py-4"><div className="w-5 h-5 bg-[#333333] rounded animate-pulse"></div></td>}
                       <td className="px-card-padding-x py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-[#1a1a24] animate-pulse"></div>
+                          <div className="w-10 h-10 rounded-lg bg-[#333333] animate-pulse"></div>
                           <div className="space-y-2">
-                            <div className="h-4 w-28 bg-[#1a1a24] rounded animate-pulse"></div>
-                            <div className="h-3 w-20 bg-[#1a1a24] rounded animate-pulse"></div>
+                            <div className="h-4 w-28 bg-[#333333] rounded animate-pulse"></div>
+                            <div className="h-3 w-20 bg-[#333333] rounded animate-pulse"></div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-card-padding-x py-4"><div className="h-5 w-16 bg-[#1a1a24] rounded animate-pulse"></div></td>
-                      <td className="px-card-padding-x py-4"><div className="h-4 w-20 bg-[#1a1a24] rounded animate-pulse"></div></td>
-                      <td className="px-card-padding-x py-4"><div className="h-4 w-24 bg-[#1a1a24] rounded animate-pulse"></div></td>
-                      <td className="px-card-padding-x py-4"><div className="h-5 w-20 bg-[#1a1a24] rounded animate-pulse"></div></td>
-                      <td className="px-card-padding-x py-4"><div className="h-5 w-16 bg-[#1a1a24] rounded animate-pulse"></div></td>
-                      <td className="px-card-padding-x py-4"><div className="h-5 w-6 bg-[#1a1a24] rounded animate-pulse ml-auto"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-5 w-16 bg-[#333333] rounded animate-pulse"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-4 w-20 bg-[#333333] rounded animate-pulse"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-4 w-24 bg-[#333333] rounded animate-pulse"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-5 w-20 bg-[#333333] rounded animate-pulse"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-5 w-16 bg-[#333333] rounded animate-pulse"></div></td>
+                      <td className="px-card-padding-x py-4"><div className="h-5 w-6 bg-[#333333] rounded animate-pulse ml-auto"></div></td>
                     </tr>
                   ))
                 ) : members.length === 0 ? (
                   <tr>
-                    <td colSpan={selectMode ? 8 : 7} className="px-card-padding-x py-8 text-center text-on-surface-variant">
+                    <td colSpan={selectMode ? (isViewer ? 7 : 8) : (isViewer ? 6 : 7)} className="px-card-padding-x py-8 text-center text-on-surface-variant">
                       No members found.
                     </td>
                   </tr>
                 ) : (
                   members.map(member => (
-                    <tr key={member.id} className={`hover:bg-surface-container-high/30 transition-colors cursor-pointer ${selectedMembers.has(member.id) ? 'bg-primary-container/5' : ''}`} >
+                    <tr key={member.id} className={`hover:bg-surface-container-high/30 transition-colors cursor-pointer ${selectedMembers.has(member.id) ? 'bg-primary-container/5' : ''}`} onClick={() => navigate(`/members/${member.id}`)} >
                       {selectMode && (
                         <td className="px-3 py-4">
                           <button onClick={() => handleToggleSelect(member.id)} className="flex items-center justify-center">
@@ -466,9 +567,13 @@ const Members = () => {
                       )}
                       <td className="px-card-padding-x py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant font-bold text-primary">
-                            {member.name.substring(0, 2).toUpperCase()}
-                          </div>
+                          {member.avatar ? (
+                            <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-lg object-cover border border-outline-variant" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant font-bold text-primary">
+                              {member.name.substring(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <div className="font-body-lg text-body-lg font-bold text-on-surface">{member.name}</div>
                             <div className="font-label-sm text-label-sm text-on-surface-variant">{member.phone}</div>
@@ -496,63 +601,65 @@ const Members = () => {
                           {member.category.toLowerCase()}
                         </span>
                       </td>
-                      <td className="px-card-padding-x py-4 text-right">
-                        <div className="relative inline-block" ref={openMenuId === member.id ? menuRef : null}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (openMenuId === member.id) {
-                                setOpenMenuId(null);
-                              } else {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setMenuPosition({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-                                setOpenMenuId(member.id);
-                              }
-                            }}
-                            className="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant transition-colors"
-                          >
-                            <span className="material-symbols-outlined">more_vert</span>
-                          </button>
-                        </div>
-
-                        {openMenuId === member.id && (
-                          <div
-                            ref={menuRef}
-                            style={{ top: menuPosition.top, right: menuPosition.right }}
-                            className="fixed w-[200px] bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-xl shadow-2xl z-[100] py-1.5 animate-fadeIn"
-                          >
+                      {!isViewer && (
+                        <td className="px-card-padding-x py-4 text-right">
+                          <div className="relative inline-block" ref={openMenuId === member.id ? menuRef : null}>
                             <button
-                              onClick={() => { navigate(`/members/${member.id}`); setOpenMenuId(null); }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (openMenuId === member.id) {
+                                  setOpenMenuId(null);
+                                } else {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setMenuPosition({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                                  setOpenMenuId(member.id);
+                                }
+                              }}
+                              className="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant transition-colors"
                             >
-                              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">visibility</span>
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => { navigate(`/members/${member.id}/edit`); setOpenMenuId(null); }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
-                              Edit Member
-                            </button>
-                            <div className="mx-3 my-1.5 border-t border-[rgba(255,255,255,0.05)]"></div>
-                            <button
-                              onClick={() => handleToggleStatus(member.id)}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{member.isActive ? 'person_off' : 'person'}</span>
-                              {member.isActive ? 'Mark as Inactive' : 'Mark as Active'}
-                            </button>
-                            <button
-                              onClick={() => handleDelete(member.id)}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EF4444] hover:bg-[#EF4444]/5 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
-                              Delete Member
+                              <span className="material-symbols-outlined">more_vert</span>
                             </button>
                           </div>
-                        )}
-                      </td>
+
+                          {openMenuId === member.id && (
+                            <div
+                              ref={menuRef}
+                              style={{ top: menuPosition.top, right: menuPosition.right }}
+                              className="fixed w-[200px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-xl shadow-2xl z-[100] py-1.5 animate-fadeIn"
+                            >
+                              <button
+                                onClick={() => { navigate(`/members/${member.id}`); setOpenMenuId(null); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">visibility</span>
+                                View Details
+                              </button>
+                              <button
+                                onClick={() => { navigate(`/members/${member.id}/edit`); setOpenMenuId(null); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
+                                Edit Member
+                              </button>
+                              <div className="mx-3 my-1.5 border-t border-[rgba(255,255,255,0.05)]"></div>
+                              <button
+                                onClick={() => handleToggleStatus(member.id)}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EEEEF0] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{member.isActive ? 'person_off' : 'person'}</span>
+                                {member.isActive ? 'Mark as Inactive' : 'Mark as Active'}
+                              </button>
+                              <button
+                                onClick={() => handleDelete(member.id)}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[13px] text-[#EF4444] hover:bg-[#EF4444]/5 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                Delete Member
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -590,25 +697,27 @@ const Members = () => {
         </div>
 
         {/* Danger Zone: Delete All Data */}
-        <div className="mt-12 mb-8 bg-[#1a1111] border border-red-500/20 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_32px_rgba(239,68,68,0.05)] overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-red-500/5 rounded-full blur-[80px] pointer-events-none"></div>
-          <div>
-            <h2 className="text-[18px] font-bold text-red-500 flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined">warning</span>
-              Danger Zone
-            </h2>
-            <p className="text-[14px] text-on-surface-variant max-w-[600px]">
-              This will permanently delete all member records from the database. This action cannot be undone. All related analytics and history will be wiped.
-            </p>
+        {isOwner && (
+          <div className="mt-12 mb-8 bg-[#1a1111] border border-red-500/20 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_32px_rgba(239,68,68,0.05)] overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-red-500/5 rounded-full blur-[80px] pointer-events-none"></div>
+            <div>
+              <h2 className="text-[18px] font-bold text-red-500 flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined">warning</span>
+                Danger Zone
+              </h2>
+              <p className="text-[14px] text-on-surface-variant max-w-[600px]">
+                This will permanently delete all member records from the database. This action cannot be undone. All related analytics and history will be wiped.
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowWipeConfirm(true)}
+              className="shrink-0 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 font-bold text-[14px] rounded-xl transition-all flex items-center gap-2 active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+              Wipe All Data
+            </button>
           </div>
-          <button 
-            onClick={() => setShowWipeConfirm(true)}
-            className="shrink-0 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 font-bold text-[14px] rounded-xl transition-all flex items-center gap-2 active:scale-95"
-          >
-            <span className="material-symbols-outlined text-[18px]">delete_forever</span>
-            Wipe All Data
-          </button>
-        </div>
+        )}
       </main>
 
       <BottomNav />
@@ -626,7 +735,7 @@ const Members = () => {
       {/* Wipe Confirmation Modal 1 */}
       {showWipeConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#111118] border border-red-500/20 rounded-2xl w-full max-w-[400px] p-6 shadow-[0_20px_60px_rgba(239,68,68,0.15)] animate-slideUp">
+          <div className="bg-[#1a1a1a] border border-red-500/20 rounded-2xl w-full max-w-[400px] p-6 shadow-[0_20px_60px_rgba(239,68,68,0.15)] animate-slideUp">
             <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-5 mx-auto border border-red-500/20">
               <span className="material-symbols-outlined text-[28px] text-red-500">warning</span>
             </div>
@@ -658,7 +767,7 @@ const Members = () => {
       {/* Wipe Final Confirmation Modal 2 */}
       {showWipeFinal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#0A0A0F] border border-red-500/40 rounded-3xl w-full max-w-[450px] p-8 shadow-[0_0_100px_rgba(239,68,68,0.2)] animate-slideUp relative overflow-hidden">
+          <div className="bg-[#0e0e0e] border border-red-500/40 rounded-3xl w-full max-w-[450px] p-8 shadow-[0_0_100px_rgba(239,68,68,0.2)] animate-slideUp relative overflow-hidden">
             {/* Animated alert background */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-red-400 to-red-600 animate-[loadBar_2s_ease-in-out_infinite]"></div>
             
@@ -672,7 +781,7 @@ const Members = () => {
               value={wipeInput}
               onChange={(e) => setWipeInput(e.target.value)}
               placeholder="Type 'Delete' here"
-              className="w-full h-[50px] bg-[#16161F] border border-red-500/30 focus:border-red-500 focus:ring-[3px] focus:ring-red-500/10 outline-none rounded-xl px-4 text-white text-center font-bold text-[16px] mb-8 transition-all"
+              className="w-full h-[50px] bg-[#262626] border border-red-500/30 focus:border-red-500 focus:ring-[3px] focus:ring-red-500/10 outline-none rounded-xl px-4 text-white text-center font-bold text-[16px] mb-8 transition-all"
               autoFocus
             />
 

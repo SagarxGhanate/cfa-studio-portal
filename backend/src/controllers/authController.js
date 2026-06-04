@@ -1,8 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
+const { sendOtpEmail } = require('../services/emailService');
+const { logAction } = require('../services/auditService');
 
 const prisma = new PrismaClient();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -30,6 +33,8 @@ const login = async (req, res, next) => {
       expiresIn: '7d',
     });
 
+    await logAction(admin.id, 'LOGIN', 'ADMIN', admin.id, { method: 'email' });
+
     res.json({
       success: true,
       data: { 
@@ -38,7 +43,9 @@ const login = async (req, res, next) => {
           id: admin.id,
           email: admin.email,
           name: admin.name || 'Admin User',
-          avatar: admin.avatar || null
+          avatar: admin.avatar || null,
+          role: admin.role,
+          teamId: admin.teamId,
         }
       },
       message: 'Login successful'
@@ -55,7 +62,12 @@ const register = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Validation Error', message: errors.array()[0].msg });
     }
 
-    const { email, password, name } = req.body;
+    const { email, password, name, securityCode } = req.body;
+
+    const MASTER_CODE = process.env.MASTER_SECURITY_CODE || 'cfastudio2024';
+    if (securityCode !== MASTER_CODE) {
+      return res.status(401).json({ success: false, error: 'Unauthorized', message: 'Invalid Studio Registration Code' });
+    }
 
     const existingAdmin = await prisma.admin.findUnique({ where: { email } });
     if (existingAdmin) {
@@ -68,7 +80,8 @@ const register = async (req, res, next) => {
       data: {
         email,
         password: hashedPassword,
-        name: name || 'Admin User'
+        name: name || 'Admin User',
+        role: 'OWNER',
       }
     });
 
@@ -84,7 +97,9 @@ const register = async (req, res, next) => {
           id: admin.id,
           email: admin.email,
           name: admin.name || 'Admin User',
-          avatar: admin.avatar || null
+          avatar: admin.avatar || null,
+          role: admin.role,
+          teamId: null,
         }
       },
       message: 'Registration successful'
@@ -128,11 +143,114 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+// ━━━ OTP-based Password Reset ━━━
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    if (!admin) {
+      // Don't reveal if email exists or not (security best practice)
+      return res.json({ success: true, message: 'If this email is registered, you will receive an OTP shortly.' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: { resetOtp: otp, resetOtpExpiry: expiry },
+    });
+
+    await sendOtpEmail(email, otp, admin.name);
+
+    res.json({ success: true, message: 'If this email is registered, you will receive an OTP shortly.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    if (!admin || !admin.resetOtp || !admin.resetOtpExpiry) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    if (admin.resetOtp !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    if (new Date() > admin.resetOtpExpiry) {
+      // Clear expired OTP
+      await prisma.admin.update({
+        where: { id: admin.id },
+        data: { resetOtp: null, resetOtpExpiry: null },
+      });
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
+    // OTP valid — generate a short-lived reset token
+    const resetToken = jwt.sign({ id: admin.id, purpose: 'password-reset' }, process.env.JWT_SECRET, {
+      expiresIn: '5m',
+    });
+
+    res.json({ success: true, data: { resetToken }, message: 'OTP verified successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Reset token and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    // Verify the reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+      if (decoded.purpose !== 'password-reset') throw new Error('Invalid token purpose');
+    } catch (err) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token. Please start over.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.admin.update({
+      where: { id: decoded.id },
+      data: { 
+        password: hashedPassword, 
+        resetOtp: null, 
+        resetOtpExpiry: null 
+      },
+    });
+
+    res.json({ success: true, message: 'Password reset successfully. You can now login with your new password.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const googleLogin = async (req, res, next) => {
   try {
-    const { credential } = req.body;
+    const { credential, isSignup, securityCode } = req.body;
     
-    // Verify Google Token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -140,22 +258,28 @@ const googleLogin = async (req, res, next) => {
     const payload = ticket.getPayload();
     const email = payload.email;
 
-    // Check if admin exists, if not, create one! (Since it's their own portal)
     let admin = await prisma.admin.findUnique({ where: { email } });
     if (!admin) {
-      // Auto-create an admin account with a random impossible password
-      // so they can only log in via Google unless they do a password reset
+      if (!isSignup) {
+        return res.status(401).json({ success: false, message: 'Account not found. Please sign up first.' });
+      }
+
+      const MASTER_CODE = process.env.MASTER_SECURITY_CODE || 'cfastudio2024';
+      if (securityCode !== MASTER_CODE) {
+        return res.status(401).json({ success: false, message: 'Invalid Studio Registration Code' });
+      }
+
       const randomPassword = await bcrypt.hash(Math.random().toString(36).slice(-10), 10);
       admin = await prisma.admin.create({
         data: { 
           email, 
           password: randomPassword,
           name: payload.name,
-          avatar: payload.picture
+          avatar: payload.picture,
+          role: 'OWNER',
         }
       });
     } else if (!admin.name || !admin.avatar) {
-      // Update existing admin with Google profile info if missing
       admin = await prisma.admin.update({
         where: { email },
         data: {
@@ -165,10 +289,11 @@ const googleLogin = async (req, res, next) => {
       });
     }
 
-    // Generate our own JWT token
     const token = jwt.sign({ id: admin.id, email: admin.email }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
+
+    await logAction(admin.id, 'LOGIN', 'ADMIN', admin.id, { method: 'google' });
 
     res.json({
       success: true,
@@ -178,7 +303,9 @@ const googleLogin = async (req, res, next) => {
           id: admin.id,
           email: admin.email,
           name: admin.name || 'Admin User',
-          avatar: admin.avatar || null
+          avatar: admin.avatar || null,
+          role: admin.role,
+          teamId: admin.teamId,
         }
       },
       message: 'Google login successful'
@@ -202,7 +329,9 @@ const getMe = async (req, res, next) => {
         id: admin.id,
         email: admin.email,
         name: admin.name || 'Admin User',
-        avatar: admin.avatar || null
+        avatar: admin.avatar || null,
+        role: admin.role,
+        teamId: admin.teamId,
       }
     });
   } catch (error) {
@@ -210,4 +339,4 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { login, register, logout, changePassword, googleLogin, getMe };
+module.exports = { login, register, logout, changePassword, forgotPassword, verifyOtp, resetPassword, googleLogin, getMe };

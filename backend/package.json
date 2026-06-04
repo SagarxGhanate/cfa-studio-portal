@@ -10,7 +10,13 @@
     "migrate": "npx prisma migrate dev",
     "migrate:deploy": "npx prisma migrate deploy",
     "generate": "npx prisma generate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --forceExit --detectOpenHandles"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -29,10 +35,13 @@
     "express-validator": "^7.3.2",
     "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.14",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "supertest": "^6.3.4"
   }
 }

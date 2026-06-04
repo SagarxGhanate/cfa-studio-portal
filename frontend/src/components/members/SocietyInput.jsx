@@ -77,12 +77,12 @@ const SocietyInput = ({ value, onChange, placeholder }) => {
         value={inputValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        className="w-full h-[40px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all"
+        className="w-full h-[40px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] px-3 text-[#EEEEF0] focus:ring-1 focus:ring-primary-container outline-none transition-all"
         placeholder={placeholder || "Select or type society name"}
       />
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-[#111118] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] z-50 max-h-[220px] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] z-50 max-h-[220px] overflow-y-auto">
           {/* Existing societies */}
           {filtered.length > 0 ? (
             filtered.map((society) => (

@@ -6,7 +6,7 @@ import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
 const Signup = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -37,11 +37,19 @@ const Signup = () => {
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    const securityCode = getValues('securityCode');
+    if (!securityCode) {
+      setError('Please enter the Studio Registration Code above before using Google Login.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
       const response = await api.post('/auth/google-login', {
-        credential: credentialResponse.credential
+        credential: credentialResponse.credential,
+        isSignup: true,
+        securityCode
       });
       if (response.data.success) {
         login(response.data.data.token, response.data.data.user);
@@ -58,13 +66,13 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 relative overflow-hidden bg-[#0A0A0F]">
+    <div className="flex items-center justify-center min-h-screen p-4 relative overflow-hidden bg-[#0e0e0e]">
       {/* Subtle Radial Glow */}
       <div className="fixed bottom-[-300px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(255,107,26,0.06)_0%,rgba(255,107,26,0)_70%)] pointer-events-none z-0"></div>
       
       {/* Signup Success Overlay */}
       {showSuccess && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0A0A0F]">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0e0e0e]">
           <div className="flex flex-col items-center animate-fadeIn">
             <div className="w-20 h-20 rounded-full bg-[#4ae176]/10 flex items-center justify-center mb-6 border-2 border-[#4ae176]/30 relative">
               <div className="absolute inset-0 rounded-full bg-[#4ae176]/5 animate-ping"></div>
@@ -72,8 +80,8 @@ const Signup = () => {
             </div>
             <h2 className="text-[22px] font-bold text-white mb-2">Account Created!</h2>
             <p className="text-[14px] text-[#6B6B80]">Redirecting to your new dashboard...</p>
-            <div className="mt-6 w-48 h-1 bg-[#1a1a24] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#4ae176] to-[#FF6B1A] rounded-full animate-[loadBar_1.5s_ease-in-out_forwards]"></div>
+            <div className="mt-6 w-48 h-1 bg-[#333333] rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#4ae176] to-[#f97316] rounded-full animate-[loadBar_1.5s_ease-in-out_forwards]"></div>
             </div>
           </div>
         </div>
@@ -81,11 +89,11 @@ const Signup = () => {
 
       {/* Main Signup Canvas */}
       <main className="relative z-10 w-full max-w-[400px]">
-        <div className="bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-[16px] px-[24px] py-[32px] w-full shadow-2xl">
+        <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-[16px] px-[24px] py-[32px] w-full shadow-2xl">
           {/* Header Section */}
           <div className="mb-8 text-center sm:text-left">
             <h1 className="font-display-lg text-[28px] leading-tight tracking-tight text-white mb-1">
-              Create <span className="text-[#FF6B1A]">Account</span>
+              Create <span className="text-[#f97316]">Account</span>
             </h1>
             <p className="font-body-md text-[13px] text-[#6B6B80] font-medium">
               Start managing your CFA Studio today.
@@ -106,7 +114,7 @@ const Signup = () => {
               </label>
               <input 
                 {...register('name', { required: 'Name is required' })}
-                className="bg-[#16161F] border border-[rgba(255,255,255,0.08)] focus:border-[#FF6B1A] focus:ring-[3px] focus:ring-[#FF6B1A]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
+                className="bg-[#262626] border border-[rgba(255,255,255,0.08)] focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
                 id="name" 
                 placeholder="John Doe" 
                 disabled={showSuccess}
@@ -120,7 +128,7 @@ const Signup = () => {
               </label>
               <input 
                 {...register('email', { required: 'Email is required' })}
-                className="bg-[#16161F] border border-[rgba(255,255,255,0.08)] focus:border-[#FF6B1A] focus:ring-[3px] focus:ring-[#FF6B1A]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
+                className="bg-[#262626] border border-[rgba(255,255,255,0.08)] focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
                 id="email" 
                 placeholder="admin@cfastudio.com" 
                 type="email"
@@ -138,7 +146,7 @@ const Signup = () => {
                   required: 'Password is required',
                   minLength: { value: 6, message: 'Password must be at least 6 characters' } 
                 })}
-                className="w-full bg-[#16161F] border border-[rgba(255,255,255,0.08)] focus:border-[#FF6B1A] focus:ring-[3px] focus:ring-[#FF6B1A]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
+                className="w-full bg-[#262626] border border-[rgba(255,255,255,0.08)] focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/10 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#EEEEF0] placeholder-[#6B6B80]/50" 
                 id="password" 
                 placeholder="••••••••" 
                 type="password"
@@ -146,10 +154,26 @@ const Signup = () => {
               />
               {errors.password && <span className="text-red-500 text-xs mt-1">{errors.password.message}</span>}
             </div>
+
+            <div className="flex flex-col gap-1.5 mt-2 p-4 bg-[#f97316]/10 border border-[#f97316]/20 rounded-[8px]">
+              <label className="font-label-md text-[12px] text-[#f97316] uppercase tracking-wider font-bold" htmlFor="securityCode">
+                <span className="material-symbols-outlined text-[14px] align-text-bottom mr-1">key</span>
+                Studio Registration Code
+              </label>
+              <input 
+                {...register('securityCode', { required: 'Security code is required to register an owner account' })}
+                className="bg-[#1a1a1a] border border-[#f97316]/30 focus:border-[#f97316] focus:ring-[3px] focus:ring-[#f97316]/20 outline-none transition-all h-[40px] rounded-[8px] px-4 font-body-md text-[14px] text-[#f97316] font-bold placeholder-[#f97316]/30" 
+                id="securityCode" 
+                placeholder="Enter master security code" 
+                type="password"
+                disabled={showSuccess}
+              />
+              {errors.securityCode && <span className="text-red-500 text-xs mt-1">{errors.securityCode.message}</span>}
+            </div>
             
             <button 
               disabled={loading || showSuccess}
-              className="w-full h-[40px] bg-[#FF6B1A] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-[8px] mt-2 font-label-md text-[14px] text-white disabled:opacity-70 flex items-center justify-center gap-2" 
+              className="w-full h-[40px] bg-[#f97316] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-[8px] mt-2 font-label-md text-[14px] text-white disabled:opacity-70 flex items-center justify-center gap-2" 
               type="submit"
             >
               {loading ? (
@@ -187,7 +211,7 @@ const Signup = () => {
 
           <div className="mt-6 text-center">
             <span className="font-body-md text-[13px] text-[#6B6B80]">Already have an account? </span>
-            <Link to="/" className="font-body-md text-[13px] text-[#FF6B1A] hover:text-[#e85a0d] transition-colors font-bold">
+            <Link to="/" className="font-body-md text-[13px] text-[#f97316] hover:text-[#e85a0d] transition-colors font-bold">
               Sign In
             </Link>
           </div>

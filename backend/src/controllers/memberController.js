@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { validationResult } = require('express-validator');
+const { logAction } = require('../services/auditService');
 
 const prisma = new PrismaClient();
 
@@ -8,21 +9,27 @@ const getMembers = async (req, res, next) => {
     const adminId = req.adminId;
     const { search, sortBy, order, status, category, classType, page = 1, limit = 20 } = req.query;
 
+    // Get admin to determine team context
+    const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
     const queryOptions = {
-      where: { adminId },
+      where: { adminId: ownerId || adminId },
       orderBy: {},
       skip: (parseInt(page) - 1) * parseInt(limit),
       take: parseInt(limit),
     };
 
     if (search) {
-      queryOptions.where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search } },
-        { guardianName: { contains: search, mode: 'insensitive' } },
-        { guardianPhone: { contains: search } },
-      ];
-      queryOptions.where.adminId = adminId;
+      queryOptions.where = {
+        adminId: ownerId || adminId,
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search } },
+          { guardianName: { contains: search, mode: 'insensitive' } },
+          { guardianPhone: { contains: search } },
+        ],
+      };
     }
 
     if (status && status !== 'all') {
@@ -68,8 +75,11 @@ const getMembers = async (req, res, next) => {
 
 const getMemberById = async (req, res, next) => {
   try {
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
     const member = await prisma.member.findFirst({
-      where: { id: req.params.id, adminId: req.adminId },
+      where: { id: req.params.id, adminId: ownerId || req.adminId },
     });
 
     if (!member) {
@@ -89,9 +99,15 @@ const createMember = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Validation Error', message: errors.array()[0].msg });
     }
 
+    // Team members create under the owner's adminId
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
     const newMember = await prisma.member.create({
-      data: { ...req.body, adminId: req.adminId },
+      data: { ...req.body, adminId: ownerId || req.adminId },
     });
+
+    await logAction(req.adminId, 'CREATE', 'MEMBER', newMember.id, { name: newMember.name });
 
     res.status(201).json({ success: true, data: newMember, message: 'Member created successfully' });
   } catch (error) {
@@ -106,8 +122,10 @@ const updateMember = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Validation Error', message: errors.array()[0].msg });
     }
 
-    // Ensure member belongs to this admin
-    const existing = await prisma.member.findFirst({ where: { id: req.params.id, adminId: req.adminId } });
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
+    const existing = await prisma.member.findFirst({ where: { id: req.params.id, adminId: ownerId || req.adminId } });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Not Found', message: 'Member not found' });
     }
@@ -117,6 +135,8 @@ const updateMember = async (req, res, next) => {
       data: req.body,
     });
 
+    await logAction(req.adminId, 'UPDATE', 'MEMBER', updatedMember.id, { name: updatedMember.name });
+
     res.json({ success: true, data: updatedMember, message: 'Member updated successfully' });
   } catch (error) {
     next(error);
@@ -125,7 +145,10 @@ const updateMember = async (req, res, next) => {
 
 const deleteMember = async (req, res, next) => {
   try {
-    const existing = await prisma.member.findFirst({ where: { id: req.params.id, adminId: req.adminId } });
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
+    const existing = await prisma.member.findFirst({ where: { id: req.params.id, adminId: ownerId || req.adminId } });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Not Found', message: 'Member not found' });
     }
@@ -133,6 +156,8 @@ const deleteMember = async (req, res, next) => {
     await prisma.member.delete({
       where: { id: req.params.id },
     });
+
+    await logAction(req.adminId, 'DELETE', 'MEMBER', req.params.id, { name: existing.name });
 
     res.json({ success: true, data: null, message: 'Member deleted successfully' });
   } catch (error) {
@@ -142,8 +167,11 @@ const deleteMember = async (req, res, next) => {
 
 const toggleMemberStatus = async (req, res, next) => {
   try {
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
     const member = await prisma.member.findFirst({
-      where: { id: req.params.id, adminId: req.adminId },
+      where: { id: req.params.id, adminId: ownerId || req.adminId },
     });
 
     if (!member) {
@@ -155,6 +183,12 @@ const toggleMemberStatus = async (req, res, next) => {
       data: { isActive: !member.isActive },
     });
 
+    await logAction(req.adminId, 'STATUS_TOGGLE', 'MEMBER', member.id, { 
+      name: member.name, 
+      from: member.isActive ? 'active' : 'inactive', 
+      to: updatedMember.isActive ? 'active' : 'inactive' 
+    });
+
     res.json({ success: true, data: updatedMember, message: 'Member status toggled successfully' });
   } catch (error) {
     next(error);
@@ -163,8 +197,11 @@ const toggleMemberStatus = async (req, res, next) => {
 
 const getSocieties = async (req, res, next) => {
   try {
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
     const members = await prisma.member.findMany({
-      where: { adminId: req.adminId, society: { not: null } },
+      where: { adminId: ownerId || req.adminId, society: { not: null } },
       select: { society: true },
       distinct: ['society'],
       orderBy: { society: 'asc' },
@@ -179,7 +216,10 @@ const getSocieties = async (req, res, next) => {
 
 const bulkImport = async (req, res, next) => {
   try {
-    const adminId = req.adminId;
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+    const targetAdminId = ownerId || req.adminId;
+
     const { members: rows } = req.body;
     if (!Array.isArray(rows) || rows.length === 0) {
       return res.status(400).json({ success: false, message: 'No members data provided' });
@@ -215,13 +255,14 @@ const bulkImport = async (req, res, next) => {
         age: parseInt(row.age, 10) || 0,
         location: String(row.location).trim(),
         society: row.society ? String(row.society).trim() : null,
+        avatar: row.avatar ? String(row.avatar) : null,
         joiningDate: new Date(row.joiningDate),
         isActive: row.isActive !== undefined ? Boolean(row.isActive) : true,
         classType,
         category,
         guardianName: row.guardianName ? String(row.guardianName).trim() : null,
         guardianPhone: row.guardianPhone ? String(row.guardianPhone).trim() : null,
-        adminId,
+        adminId: targetAdminId,
       });
     });
 
@@ -230,6 +271,8 @@ const bulkImport = async (req, res, next) => {
       const result = await prisma.member.createMany({ data: validMembers });
       created = result.count;
     }
+
+    await logAction(req.adminId, 'BULK_IMPORT', 'MEMBER', null, { imported: created, skipped: rows.length - validMembers.length });
 
     res.json({
       success: true,
@@ -243,7 +286,13 @@ const bulkImport = async (req, res, next) => {
 
 const deleteAllMembers = async (req, res, next) => {
   try {
-    const result = await prisma.member.deleteMany({ where: { adminId: req.adminId } });
+    const admin = await prisma.admin.findUnique({ where: { id: req.adminId } });
+    const ownerId = admin.role === 'OWNER' ? admin.id : admin.teamId;
+
+    const result = await prisma.member.deleteMany({ where: { adminId: ownerId || req.adminId } });
+
+    await logAction(req.adminId, 'WIPE_ALL', 'MEMBER', null, { count: result.count });
+
     res.json({ success: true, message: `Successfully deleted all ${result.count} members` });
   } catch (error) {
     next(error);

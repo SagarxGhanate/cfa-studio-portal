@@ -7,8 +7,9 @@ import autoTable from 'jspdf-autotable';
 import Navbar from '../components/layout/Navbar';
 import BottomNav from '../components/layout/BottomNav';
 import api from '../services/api';
+import useChartData from '../hooks/useChartData';
 
-const CHART_COLORS = ['#FF6B1A', '#4ae176', '#8dcdff', '#ffb596', '#ffb4ab', '#6bff8f', '#00a2eb', '#a98a7e'];
+const CHART_COLORS = ['#f97316', '#4ae176', '#8dcdff', '#ffb596', '#ffb4ab', '#6bff8f', '#00a2eb', '#a98a7e'];
 
 const Analytics = () => {
   const [members, setMembers] = useState([]);
@@ -33,96 +34,8 @@ const Analytics = () => {
 
   // ============ COMPUTED ANALYTICS ============
 
-  // Helper: get week label
-  const getWeekLabel = (date) => {
-    const mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${date.getDate()} ${mn[date.getMonth()]}`;
-  };
-
-  // Chart data based on selected period
-  const chartData = useMemo(() => {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const result = [];
-
-    if (chartPeriod === 'weekly') {
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-        const count = members.filter(m => new Date(m.joiningDate).toDateString() === d.toDateString()).length;
-        result.push({ name: d.toDateString() === today.toDateString() ? 'Today' : dayNames[d.getDay()], count });
-      }
-    } else if (chartPeriod === 'monthly') {
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      for (let day = 1; day <= daysInMonth; day++) {
-        const d = new Date(now.getFullYear(), now.getMonth(), day);
-        const count = members.filter(m => new Date(m.joiningDate).toDateString() === d.toDateString()).length;
-        result.push({ name: String(day), count });
-      }
-    } else if (chartPeriod === 'quarterly') {
-      const start = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
-      const current = new Date(start);
-      current.setDate(current.getDate() - ((current.getDay() + 6) % 7));
-      while (current <= today) {
-        const weekEnd = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 6);
-        const count = members.filter(m => {
-          const jd = new Date(m.joiningDate);
-          return jd >= current && jd <= new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate(), 23, 59, 59);
-        }).length;
-        result.push({ name: getWeekLabel(current), count });
-        current.setDate(current.getDate() + 7);
-      }
-    } else if (chartPeriod === '6m') {
-      const start = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
-      const current = new Date(start);
-      current.setDate(current.getDate() - ((current.getDay() + 6) % 7));
-      while (current <= today) {
-        const weekEnd = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 6);
-        const count = members.filter(m => {
-          const jd = new Date(m.joiningDate);
-          return jd >= current && jd <= new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate(), 23, 59, 59);
-        }).length;
-        result.push({ name: getWeekLabel(current), count });
-        current.setDate(current.getDate() + 7);
-      }
-    } else if (chartPeriod === '1y') {
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const count = members.filter(m => {
-          const jd = new Date(m.joiningDate);
-          return jd.getMonth() === d.getMonth() && jd.getFullYear() === d.getFullYear();
-        }).length;
-        result.push({ name: `${monthNames[d.getMonth()]} '${String(d.getFullYear()).slice(-2)}`, count });
-      }
-    } else {
-      if (members.length > 0) {
-        const dates = members.map(m => new Date(m.joiningDate));
-        const earliest = new Date(Math.min(...dates));
-        const start = new Date(earliest.getFullYear(), earliest.getMonth(), 1);
-        const current = new Date(start);
-        while (current <= now) {
-          const count = members.filter(m => {
-            const jd = new Date(m.joiningDate);
-            return jd.getMonth() === current.getMonth() && jd.getFullYear() === current.getFullYear();
-          }).length;
-          result.push({ name: `${monthNames[current.getMonth()]} '${String(current.getFullYear()).slice(-2)}`, count });
-          current.setMonth(current.getMonth() + 1);
-        }
-      }
-    }
-
-    return result;
-  }, [members, chartPeriod]);
-
-  const chartTitles = {
-    weekly: 'New Members — This Week',
-    monthly: 'New Members — This Month',
-    quarterly: 'New Members — Quarter',
-    '6m': 'New Members — 6 Months',
-    '1y': 'New Members — 1 Year',
-    all: 'New Members — All Time',
-  };
+  // Shared chart hook
+  const { chartData, chartTitles } = useChartData(members, chartPeriod);
 
   // Class type distribution
   const classTypeData = useMemo(() => {
@@ -190,9 +103,10 @@ const Analytics = () => {
       'Guardian Name': m.guardianName || '',
       'Guardian Phone': m.guardianPhone || '',
       'Status': m.isActive ? 'Active' : 'Inactive',
+      'Avatar': m.avatar || '',
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 15 }, { wch: 10 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 15 }, { wch: 10 }, { wch: 15 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'All Members');
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -214,9 +128,10 @@ const Analytics = () => {
       'Guardian Name': m.guardianName || '',
       'Guardian Phone': m.guardianPhone || '',
       'Status': m.isActive ? 'Active' : 'Inactive',
+      'Avatar': m.avatar || '',
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 15 }, { wch: 10 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 15 }, { wch: 10 }, { wch: 15 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `New Members - ${monthName}`);
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -231,7 +146,7 @@ const Analytics = () => {
     // Header
     doc.setFillColor(10, 10, 15);
     doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 107, 26);
+    doc.setTextColor(249, 115, 22);
     doc.setFontSize(22);
     doc.text('CFA Studio', 14, 18);
     doc.setTextColor(200, 200, 200);
@@ -255,7 +170,7 @@ const Analytics = () => {
         ['Most Popular Class', popularClassType],
       ],
       theme: 'striped',
-      headStyles: { fillColor: [255, 107, 26] },
+      headStyles: { fillColor: [249, 115, 22] },
     });
 
     // Location breakdown
@@ -267,7 +182,7 @@ const Analytics = () => {
       head: [['Location', 'Members']],
       body: locationData.map(l => [l.name, String(l.count)]),
       theme: 'striped',
-      headStyles: { fillColor: [255, 107, 26] },
+      headStyles: { fillColor: [249, 115, 22] },
     });
 
     // Class type breakdown
@@ -279,7 +194,7 @@ const Analytics = () => {
       head: [['Class Type', 'Members']],
       body: classTypeData.map(c => [c.name, String(c.value)]),
       theme: 'striped',
-      headStyles: { fillColor: [255, 107, 26] },
+      headStyles: { fillColor: [249, 115, 22] },
     });
 
     doc.save(`CFA_Analytics_${now.toISOString().slice(0,10)}.pdf`);
@@ -290,7 +205,7 @@ const Analytics = () => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#16161F] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 shadow-xl">
+        <div className="bg-[#262626] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 shadow-xl">
           <p className="text-[12px] text-[#6B6B80]">{label}</p>
           <p className="text-[14px] font-bold text-[#EEEEF0]">{payload[0].value} members</p>
         </div>
@@ -301,7 +216,7 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F]">
+      <div className="min-h-screen bg-[#0e0e0e]">
         <Navbar />
         <main className="flex items-center justify-center h-[60vh] text-on-surface-variant">Loading analytics...</main>
       </div>
@@ -309,7 +224,7 @@ const Analytics = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#0e0e0e]">
       <Navbar />
 
       <main className="max-w-[1440px] mx-auto px-container-margin py-8 space-y-6 pb-24">
@@ -324,14 +239,14 @@ const Analytics = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={exportAnalyticsPDF}
-              className="flex items-center gap-2 px-4 py-2 h-[36px] bg-[#111118] border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2 h-[36px] bg-[#1a1a1a] border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
               Export PDF
             </button>
             <button
               onClick={exportAllMembersExcel}
-              className="flex items-center gap-2 px-4 py-2 h-[36px] bg-[#111118] border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2 h-[36px] bg-[#1a1a1a] border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-[16px]">table_view</span>
               All Members
@@ -396,7 +311,7 @@ const Analytics = () => {
           <div className="card-surface rounded-xl p-card-padding-y px-card-padding-x">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <h3 className="font-headline-sm text-headline-sm">{chartTitles[chartPeriod]}</h3>
-              <div className="flex bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-lg p-0.5 flex-wrap">
+              <div className="flex bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-lg p-0.5 flex-wrap">
                 {[{key: 'weekly', label: 'W'}, {key: 'monthly', label: 'M'}, {key: 'quarterly', label: 'Q'}, {key: '6m', label: '6M'}, {key: '1y', label: '1Y'}, {key: 'all', label: 'All'}].map(opt => (
                   <button
                     key={opt.key}
@@ -425,7 +340,7 @@ const Analytics = () => {
                     allowDecimals={false}
                   />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                  <Bar dataKey="count" fill="#FF6B1A" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#f97316" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -484,7 +399,7 @@ const Analytics = () => {
                     <div className="w-[140px] md:w-[180px] shrink-0">
                       <span className="text-[13px] text-[#EEEEF0] truncate block">{loc.name}</span>
                     </div>
-                    <div className="flex-1 h-[28px] bg-[#16161F] rounded-lg overflow-hidden relative">
+                    <div className="flex-1 h-[28px] bg-[#262626] rounded-lg overflow-hidden relative">
                       <div
                         className="h-full rounded-lg transition-all duration-500"
                         style={{
@@ -518,7 +433,7 @@ const Analytics = () => {
                       <span className="text-[13px] text-[#EEEEF0] capitalize">{cat.name.toLowerCase()}</span>
                       <span className="text-[13px] font-bold text-[#EEEEF0]">{cat.value} <span className="text-[#6B6B80] font-normal">({pct}%)</span></span>
                     </div>
-                    <div className="h-2 bg-[#16161F] rounded-full overflow-hidden">
+                    <div className="h-2 bg-[#262626] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{

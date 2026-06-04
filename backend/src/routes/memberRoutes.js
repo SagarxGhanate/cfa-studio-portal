@@ -12,17 +12,21 @@ const {
   bulkImport
 } = require('../controllers/memberController');
 const authMiddleware = require('../middleware/authMiddleware');
+const { requireRole } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
 router.use(authMiddleware);
 
+// Read routes — all roles
 router.get('/societies', getSocieties);
 router.get('/', getMembers);
 router.get('/:id', getMemberById);
 
+// Write routes — OWNER and MANAGER only
 router.post(
   '/',
+  requireRole('OWNER', 'MANAGER'),
   [
     body('name').notEmpty().withMessage('Name is required'),
     body('phone').notEmpty().withMessage('Phone is required'),
@@ -35,10 +39,11 @@ router.post(
   createMember
 );
 
-router.post('/bulk', bulkImport);
+router.post('/bulk', requireRole('OWNER', 'MANAGER'), bulkImport);
 
 router.put(
   '/:id',
+  requireRole('OWNER', 'MANAGER'),
   [
     body('name').optional().notEmpty(),
     body('phone').optional().notEmpty(),
@@ -51,8 +56,10 @@ router.put(
   updateMember
 );
 
-router.patch('/:id/status', toggleMemberStatus);
-router.delete('/all', deleteAllMembers);
-router.delete('/:id', deleteMember);
+router.patch('/:id/status', requireRole('OWNER', 'MANAGER'), toggleMemberStatus);
+
+// Destructive routes — OWNER only
+router.delete('/all', requireRole('OWNER'), deleteAllMembers);
+router.delete('/:id', requireRole('OWNER', 'MANAGER'), deleteMember);
 
 module.exports = router;

@@ -15,6 +15,7 @@ model Member {
   age           Int
   location      String
   society       String?
+  avatar        String?   @db.Text
   joiningDate   DateTime
   isActive      Boolean   @default(true)
   classType     ClassType
@@ -38,12 +39,40 @@ enum Category {
   ADULTS
 }
 
+enum Role {
+  OWNER
+  MANAGER
+  VIEWER
+}
+
 model Admin {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  password         String
+  initialPassword  String?
+  name             String?
+  avatar           String?
+  role             Role       @default(OWNER)
+  teamId           String?    // Links MANAGER/VIEWER to OWNER's id
+  team             Admin?     @relation("TeamMembers", fields: [teamId], references: [id])
+  teamMembers      Admin[]    @relation("TeamMembers")
+  resetOtp         String?
+  resetOtpExpiry   DateTime?
+  members          Member[]
+  auditLogs        AuditLog[]
+  createdAt        DateTime   @default(now())
+}
+
+model AuditLog {
   id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  avatar    String?
-  members   Member[]
+  action    String   // CREATE, UPDATE, DELETE, BULK_IMPORT, WIPE_ALL, STATUS_TOGGLE, LOGIN
+  entity    String   // MEMBER, ADMIN, TEAM
+  entityId  String?  // Target entity ID (null for bulk ops)
+  details   String?  @db.Text // JSON string with change context
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id])
   createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
 }

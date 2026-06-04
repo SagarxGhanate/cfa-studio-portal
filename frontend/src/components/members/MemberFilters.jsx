@@ -57,7 +57,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
       {/* Modal */}
       <div className="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center z-50">
         <div 
-          className="bg-[#111118] border border-[rgba(255,255,255,0.07)] rounded-t-[20px] md:rounded-[16px] w-full md:max-w-[420px] max-h-[85vh] overflow-y-auto animate-slideUp"
+          className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.07)] rounded-t-[20px] md:rounded-[16px] w-full md:max-w-[420px] max-h-[85vh] overflow-y-auto animate-slideUp"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Handle bar (mobile) */}
@@ -134,7 +134,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
                       onKeyDown={(e) => e.key === 'Enter' && handleAddLocation()}
                       placeholder="Enter location..."
                       autoFocus
-                      className="flex-1 h-[34px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 text-[13px] text-[#EEEEF0] placeholder-[#6B6B80]/50 outline-none focus:border-primary-container transition-colors"
+                      className="flex-1 h-[34px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 text-[13px] text-[#EEEEF0] placeholder-[#6B6B80]/50 outline-none focus:border-primary-container transition-colors"
                     />
                     <button
                       onClick={handleAddLocation}
@@ -201,7 +201,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
                       onKeyDown={(e) => e.key === 'Enter' && handleAddSociety()}
                       placeholder="Enter society name..."
                       autoFocus
-                      className="flex-1 h-[34px] bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 text-[13px] text-[#EEEEF0] placeholder-[#6B6B80]/50 outline-none focus:border-primary-container transition-colors"
+                      className="flex-1 h-[34px] bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 text-[13px] text-[#EEEEF0] placeholder-[#6B6B80]/50 outline-none focus:border-primary-container transition-colors"
                     />
                     <button
                       onClick={handleAddSociety}
@@ -225,7 +225,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
               <div className="border-b border-outline-variant/30 pb-2 mb-3">
                 <h4 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Class Type</h4>
               </div>
-              <div className="grid grid-cols-4 bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
+              <div className="grid grid-cols-4 bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
                 {[
                   { value: '', label: 'All' },
                   { value: 'PERSONAL', label: 'Personal' },
@@ -252,7 +252,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
               <div className="border-b border-outline-variant/30 pb-2 mb-3">
                 <h4 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Category</h4>
               </div>
-              <div className="grid grid-cols-4 bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
+              <div className="grid grid-cols-4 bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
                 {[
                   { value: '', label: 'All' },
                   { value: 'TODDLERS', label: 'Toddlers' },
@@ -279,7 +279,7 @@ const MemberFilters = ({ isOpen, onClose, onApply, filters, allLocations, allSoc
               <div className="border-b border-outline-variant/30 pb-2 mb-3">
                 <h4 className="text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold">Status</h4>
               </div>
-              <div className="grid grid-cols-3 bg-[#16161F] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
+              <div className="grid grid-cols-3 bg-[#262626] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-1">
                 {[
                   { value: '', label: 'All' },
                   { value: 'active', label: 'Active' },

@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { login, register, logout, changePassword, googleLogin, getMe } = require('../controllers/authController');
+const { login, register, logout, changePassword, forgotPassword, verifyOtp, resetPassword, googleLogin, getMe } = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -37,6 +37,31 @@ router.patch(
     body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
   ],
   changePassword
+);
+
+// OTP Password Reset Flow
+router.post(
+  '/forgot-password',
+  [body('email').isEmail().withMessage('Valid email is required')],
+  forgotPassword
+);
+
+router.post(
+  '/verify-otp',
+  [
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+  ],
+  verifyOtp
+);
+
+router.post(
+  '/reset-password',
+  [
+    body('resetToken').notEmpty().withMessage('Reset token is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  ],
+  resetPassword
 );
 
 module.exports = router;

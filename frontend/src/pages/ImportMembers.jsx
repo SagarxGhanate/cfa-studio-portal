@@ -88,6 +88,7 @@ const ImportMembers = () => {
             isActive: String(findVal(['status', 'active'])).toLowerCase() !== 'inactive',
             guardianName: findVal(['guardian name', 'guardian', 'parent']),
             guardianPhone: findVal(['guardian phone', 'parent phone']),
+            avatar: findVal(['avatar', 'photo', 'image', 'profile pic']) || null,
           };
         }).filter(m => m.name && m.phone); // Require at least name and phone
 
@@ -181,7 +182,8 @@ const ImportMembers = () => {
         'Category': 'ADULTS',
         'Guardian Name': '',
         'Guardian Phone': '',
-        'Status': 'Active'
+        'Status': 'Active',
+        'Avatar': ''
       }
     ]);
     const wb = XLSX.utils.book_new();
@@ -190,7 +192,7 @@ const ImportMembers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="min-h-screen bg-[#0e0e0e]">
       <Navbar />
 
       <main className="max-w-[1440px] mx-auto px-container-margin py-8 pb-24">
@@ -302,7 +304,7 @@ const ImportMembers = () => {
                   </div>
                 ) : previewData.length > 0 ? (
                   <table className="w-full text-left border-collapse">
-                    <thead className="bg-[#16161F] sticky top-0 z-10">
+                    <thead className="bg-[#262626] sticky top-0 z-10">
                       <tr>
                         <th className="px-4 py-3 text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold border-b border-outline-variant whitespace-nowrap">Name</th>
                         <th className="px-4 py-3 text-[11px] uppercase tracking-wider text-[#6B6B80] font-bold border-b border-outline-variant whitespace-nowrap">Phone</th>
@@ -351,7 +353,7 @@ const ImportMembers = () => {
       {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#111118] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 max-w-[420px] w-full mx-4 shadow-[0_16px_64px_rgba(0,0,0,0.6)]">
+          <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 max-w-[420px] w-full mx-4 shadow-[0_16px_64px_rgba(0,0,0,0.6)]">
             <div className="flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-full bg-primary-container/15 flex items-center justify-center mb-4 border border-primary-container/25">
                 <span className="material-symbols-outlined text-[28px] text-primary-container">group_add</span>

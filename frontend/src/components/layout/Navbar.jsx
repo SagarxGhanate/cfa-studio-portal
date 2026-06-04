@@ -72,67 +72,88 @@ const Navbar = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
+  const isOwner = user?.role === 'OWNER';
+  const isManager = user?.role === 'MANAGER';
+
   return (
     <>
       {/* Logging Out Overlay */}
       {loggingOut && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#0A0A0F]">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#0e0e0e]">
           <div className="flex flex-col items-center animate-fadeIn">
-            <div className="w-20 h-20 rounded-full bg-[#FF6B1A]/10 flex items-center justify-center mb-6 border-2 border-[#FF6B1A]/30 relative">
-              <span className="material-symbols-outlined animate-spin text-[36px] text-[#FF6B1A]">progress_activity</span>
+            <div className="w-20 h-20 rounded-full bg-[#f97316]/10 flex items-center justify-center mb-6 border-2 border-[#f97316]/30 relative">
+              <span className="material-symbols-outlined animate-spin text-[36px] text-[#f97316]">progress_activity</span>
             </div>
             <h2 className="text-[20px] font-bold text-white mb-2">Signing out...</h2>
             <p className="text-[14px] text-[#6B6B80]">Ending your session securely</p>
-            <div className="mt-6 w-48 h-1 bg-[#1a1a24] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#FF6B1A] to-[#EF4444] rounded-full animate-[loadBar_1.3s_ease-in-out_forwards]"></div>
+            <div className="mt-6 w-48 h-1 bg-[#333333] rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#f97316] to-[#EF4444] rounded-full animate-[loadBar_1.3s_ease-in-out_forwards]"></div>
             </div>
           </div>
         </div>
       )}
 
-      <header className={`sticky top-0 z-50 w-full h-[52px] backdrop-blur-[12px] border-b transition-colors duration-300 ${isDark ? 'bg-[#0A0A0F]/80 border-[rgba(255,255,255,0.06)]' : 'bg-white/85 border-[rgba(0,0,0,0.06)]'}`}>
+      <header className={`sticky top-0 z-50 w-full h-[52px] backdrop-blur-[12px] border-b transition-colors duration-300 ${isDark ? 'bg-[#0e0e0e]/80 border-[rgba(255,255,255,0.06)]' : 'bg-white/85 border-[rgba(0,0,0,0.06)]'}`}>
         <div className="relative flex justify-between items-center px-container-margin w-full max-w-[1440px] mx-auto h-full">
           <div className="flex items-center gap-8 h-full">
             <span className={`font-headline-sm text-headline-sm font-bold ${isDark ? 'text-on-surface' : 'text-[#1a1a2e]'}`}>CFA Studio</span>
           </div>
             
-          <nav className="hidden md:flex items-center gap-8 h-full absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden md:flex items-center gap-6 xl:gap-8 h-full absolute left-1/2 -translate-x-1/2">
             <Link 
               to="/dashboard" 
-              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/dashboard') ? 'text-[#FF6B1A] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
+              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/dashboard') ? 'text-[#f97316] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
             >
               Dashboard
-              {isActive('/dashboard') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#FF6B1A] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
+              {isActive('/dashboard') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#f97316] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
             </Link>
             <Link 
               to="/members" 
-              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/members') ? 'text-[#FF6B1A] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
+              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/members') ? 'text-[#f97316] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
             >
               Members
-              {isActive('/members') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#FF6B1A] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
+              {isActive('/members') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#f97316] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
             </Link>
             <Link 
               to="/analytics" 
-              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/analytics') ? 'text-[#FF6B1A] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
+              className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/analytics') ? 'text-[#f97316] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
             >
               Analytics
-              {isActive('/analytics') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#FF6B1A] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
+              {isActive('/analytics') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#f97316] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
             </Link>
+            {(isOwner || isManager) && (
+              <Link 
+                to="/audit-log" 
+                className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/audit-log') ? 'text-[#f97316] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
+              >
+                Activity Log
+                {isActive('/audit-log') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#f97316] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
+              </Link>
+            )}
+            {isOwner && (
+              <Link 
+                to="/team" 
+                className={`h-full flex items-center font-label-md text-[14px] transition-colors duration-200 relative group ${isActive('/team') ? 'text-[#f97316] font-bold' : isDark ? 'text-on-surface-variant hover:text-white' : 'text-[#6B6B80] hover:text-[#1a1a2e]'}`}
+              >
+                Team
+                {isActive('/team') && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#f97316] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,26,0.5)]"></div>}
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
             <button className={`p-2 rounded-xl transition-all active:scale-95 relative hidden sm:block ${isDark ? 'hover:bg-white/5 text-on-surface-variant hover:text-white' : 'hover:bg-black/5 text-[#6B6B80] hover:text-[#1a1a2e]'}`}>
               <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#FF6B1A] rounded-full border border-[#0A0A0F]"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-[#f97316] rounded-full border border-[#0e0e0e]"></span>
             </button>
 
             <div className="relative" ref={profileRef}>
               <button 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className={`flex items-center gap-2.5 p-1 pr-3 rounded-full transition-all group outline-none border ${isDark ? 'bg-[#16161F]/60 hover:bg-[#16161F] border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]' : 'bg-[#F0F0F5]/80 hover:bg-[#E8E8ED] border-[rgba(0,0,0,0.06)] hover:border-[rgba(0,0,0,0.12)]'}`}
+                className={`flex items-center gap-2.5 p-1 pr-3 rounded-full transition-all group outline-none border ${isDark ? 'bg-[#262626]/60 hover:bg-[#262626] border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]' : 'bg-[#F0F0F5]/80 hover:bg-[#E8E8ED] border-[rgba(0,0,0,0.06)] hover:border-[rgba(0,0,0,0.12)]'}`}
               >
                 <div className="relative">
-                  <div className={`h-8 w-8 rounded-full overflow-hidden ring-2 transition-all ${isDark ? 'ring-[#FF6B1A]/30 group-hover:ring-[#FF6B1A]/60' : 'ring-[#FF6B1A]/20 group-hover:ring-[#FF6B1A]/50'}`}>
+                  <div className={`h-8 w-8 rounded-full overflow-hidden ring-2 transition-all ${isDark ? 'ring-[#f97316]/30 group-hover:ring-[#f97316]/60' : 'ring-[#f97316]/20 group-hover:ring-[#f97316]/50'}`}>
                     <img 
                       alt="Profile" 
                       className="w-full h-full object-cover" 
@@ -151,7 +172,7 @@ const Navbar = () => {
               </button>
 
               {isProfileOpen && (
-                <div className={`absolute right-0 mt-2 w-56 rounded-2xl overflow-hidden z-[100] animate-fadeIn flex flex-col border ${isDark ? 'bg-[#111118]/95 backdrop-blur-xl border-[rgba(255,255,255,0.08)] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-white/95 backdrop-blur-xl border-[rgba(0,0,0,0.08)] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'}`}>
+                <div className={`absolute right-0 mt-2 w-56 rounded-2xl overflow-hidden z-[100] animate-fadeIn flex flex-col border ${isDark ? 'bg-[#1a1a1a]/95 backdrop-blur-xl border-[rgba(255,255,255,0.08)] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-white/95 backdrop-blur-xl border-[rgba(0,0,0,0.08)] shadow-[0_8px_32px_rgba(0,0,0,0.12)]'}`}>
                   <div className={`p-4 border-b ${isDark ? 'border-[rgba(255,255,255,0.05)]' : 'border-[rgba(0,0,0,0.05)]'}`}>
                     <p className={`text-[14px] font-bold ${isDark ? 'text-white' : 'text-[#1a1a2e]'}`}>{user?.name || 'Admin User'}</p>
                     <p className="text-[12px] text-[#6B6B80]">{user?.email || 'admin@cfastudio.com'}</p>
@@ -185,7 +206,7 @@ const Navbar = () => {
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className={`rounded-2xl p-8 max-w-[380px] w-full mx-4 animate-fadeIn border ${isDark ? 'bg-[#111118] border-[rgba(255,255,255,0.08)] shadow-[0_16px_64px_rgba(0,0,0,0.6)]' : 'bg-white border-[rgba(0,0,0,0.08)] shadow-[0_16px_64px_rgba(0,0,0,0.15)]'}`}>
+          <div className={`rounded-2xl p-8 max-w-[380px] w-full mx-4 animate-fadeIn border ${isDark ? 'bg-[#1a1a1a] border-[rgba(255,255,255,0.08)] shadow-[0_16px_64px_rgba(0,0,0,0.6)]' : 'bg-white border-[rgba(0,0,0,0.08)] shadow-[0_16px_64px_rgba(0,0,0,0.15)]'}`}>
             <div className="flex flex-col items-center text-center">
               {/* Warning icon with pulse */}
               <div className="w-16 h-16 rounded-full bg-[#EF4444]/10 flex items-center justify-center mb-5 border border-[#EF4444]/20 relative">
@@ -201,9 +222,9 @@ const Navbar = () => {
               {/* Countdown progress bar */}
               {logoutCountdown > 0 && (
                 <div className="w-full mb-5">
-                  <div className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-[#1a1a24]' : 'bg-[#E8E8ED]'}`}>
+                  <div className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-[#333333]' : 'bg-[#E8E8ED]'}`}>
                     <div 
-                      className="h-full bg-gradient-to-r from-[#EF4444] to-[#FF6B1A] rounded-full transition-all duration-1000 ease-linear"
+                      className="h-full bg-gradient-to-r from-[#EF4444] to-[#f97316] rounded-full transition-all duration-1000 ease-linear"
                       style={{ width: `${((3 - logoutCountdown) / 3) * 100}%` }}
                     ></div>
                   </div>
@@ -222,7 +243,7 @@ const Navbar = () => {
                   disabled={logoutCountdown > 0}
                   className={`flex-1 py-2.5 rounded-lg text-[13px] font-bold transition-all flex items-center justify-center gap-2 ${
                     logoutCountdown > 0
-                      ? `${isDark ? 'bg-[#1a1a24] text-[#6B6B80]' : 'bg-[#E8E8ED] text-[#999]'} cursor-not-allowed border border-[rgba(0,0,0,0.05)]`
+                      ? `${isDark ? 'bg-[#333333] text-[#6B6B80]' : 'bg-[#E8E8ED] text-[#999]'} cursor-not-allowed border border-[rgba(0,0,0,0.05)]`
                       : 'bg-[#EF4444] text-white hover:bg-[#DC2626] active:scale-[0.98] shadow-[0_0_20px_rgba(239,68,68,0.3)]'
                   }`}
                 >
