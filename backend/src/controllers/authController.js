@@ -369,4 +369,39 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { login, register, logout, changePassword, forgotPassword, verifyOtp, resetPassword, googleLogin, getMe };
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, avatar } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required' });
+    }
+
+    const updatedAdmin = await prisma.admin.update({
+      where: { id: req.adminId },
+      data: {
+        name: name.trim(),
+        ...(avatar !== undefined && { avatar })
+      }
+    });
+
+    await logAction(req.adminId, 'UPDATE', 'ADMIN', req.adminId, { updatedFields: { name: name.trim() } });
+
+    res.json({
+      success: true,
+      data: {
+        id: updatedAdmin.id,
+        email: updatedAdmin.email,
+        name: updatedAdmin.name || 'Admin User',
+        avatar: updatedAdmin.avatar || null,
+        role: updatedAdmin.role,
+        teamId: updatedAdmin.teamId,
+        loginCount: updatedAdmin.loginCount,
+      },
+      message: 'Profile updated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { login, register, logout, changePassword, forgotPassword, verifyOtp, resetPassword, googleLogin, getMe, updateProfile };
