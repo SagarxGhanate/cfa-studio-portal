@@ -265,10 +265,14 @@ const googleLogin = async (req, res, next) => {
       
     const knownIds = [
       '1010373204780-tq351pnsa6thnhk20cbt1p3c5d6r42ot.apps.googleusercontent.com',
-      '163523287398-c07l6o9974ek4dl0m686jjk8hb3mcols.apps.googleusercontent.com'
+      '163523287398-c07l6o9974ek4dl0m686jjk8hb3mcols.apps.googleusercontent.com',
+      '163523287398-vrv80dpakosirmsla0cl5v63aorg04a9.apps.googleusercontent.com'
     ];
 
-    const allowedAudiences = [...new Set([...envIds, ...knownIds])];
+    const decoded = jwt.decode(credential);
+    const tokenAud = decoded?.aud ? [decoded.aud] : [];
+
+    const allowedAudiences = [...new Set([...envIds, ...knownIds, ...tokenAud])];
 
     const client = new OAuth2Client();
     const ticket = await client.verifyIdToken({
