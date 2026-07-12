@@ -259,13 +259,21 @@ const googleLogin = async (req, res, next) => {
   try {
     const { credential, isSignup, securityCode } = req.body;
     
-    const audiences = process.env.GOOGLE_CLIENT_ID
-      ? process.env.GOOGLE_CLIENT_ID.split(',').map(id => id.trim())
-      : [process.env.GOOGLE_CLIENT_ID];
+    const envIds = process.env.GOOGLE_CLIENT_ID
+      ? process.env.GOOGLE_CLIENT_ID.split(',').map(id => id.trim().replace(/^["']|["']$/g, ''))
+      : [];
+      
+    const knownIds = [
+      '1010373204780-tq351pnsa6thnhk20cbt1p3c5d6r42ot.apps.googleusercontent.com',
+      '163523287398-c07l6o9974ek4dl0m686jjk8hb3mcols.apps.googleusercontent.com'
+    ];
 
-    const ticket = await googleClient.verifyIdToken({
+    const allowedAudiences = [...new Set([...envIds, ...knownIds])];
+
+    const client = new OAuth2Client();
+    const ticket = await client.verifyIdToken({
       idToken: credential,
-      audience: audiences.length === 1 ? audiences[0] : audiences,
+      audience: allowedAudiences,
     });
     const payload = ticket.getPayload();
     const email = payload.email;
@@ -330,7 +338,7 @@ const googleLogin = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Google login error:', error);
-    return res.status(401).json({ success: false, error: 'Unauthorized', message: 'Invalid Google token' });
+    return res.status(401).json({ success: false, error: 'Unauthorized', message: `Invalid Google token: ${error.message || error}` });
   }
 };
 
