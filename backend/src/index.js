@@ -20,16 +20,16 @@ app.use(helmet());
 // CORS — restrict to your frontend origin in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://localhost:3000'];
+  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
+    return callback(new Error('Not allowed by CORS: ' + origin));
   },
   credentials: true,
 }));
@@ -78,8 +78,8 @@ app.get('/api/health', (req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Only start listening when not running tests
-if (process.env.NODE_ENV !== 'test') {
+// Only start listening when not running tests and not inside Vercel serverless environment
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
   });

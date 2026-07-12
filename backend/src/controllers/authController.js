@@ -259,9 +259,13 @@ const googleLogin = async (req, res, next) => {
   try {
     const { credential, isSignup, securityCode } = req.body;
     
+    const audiences = process.env.GOOGLE_CLIENT_ID
+      ? process.env.GOOGLE_CLIENT_ID.split(',').map(id => id.trim())
+      : [process.env.GOOGLE_CLIENT_ID];
+
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: audiences.length === 1 ? audiences[0] : audiences,
     });
     const payload = ticket.getPayload();
     const email = payload.email;
