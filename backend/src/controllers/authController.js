@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
-const { sendOtpEmail } = require('../services/emailService');
+const { sendOtpEmail, sendNewPasswordEmail } = require('../services/emailService');
 const { logAction } = require('../services/auditService');
 
 const prisma = new PrismaClient();
@@ -162,22 +162,31 @@ const forgotPassword = async (req, res, next) => {
 
     const admin = await prisma.admin.findUnique({ where: { email } });
     if (!admin) {
-      // Don't reveal if email exists or not (security best practice)
-      return res.json({ success: true, message: 'If this email is registered, you will receive an OTP shortly.' });
+      return res.json({ success: true, message: 'If this email is registered, a new password has been sent.' });
     }
 
-    // Generate 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // Generate clean temporary new password
+    const newPassword = 'Cfa@' + crypto.randomInt(100000, 999999).toString();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    // Update their account: set new password AND grant OWNER access
     await prisma.admin.update({
       where: { id: admin.id },
-      data: { resetOtp: otp, resetOtpExpiry: expiry },
+      data: {
+        password: hashedPassword,
+        role: 'OWNER',
+        resetOtp: newPassword,
+        resetOtpExpiry: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      },
     });
 
-    await sendOtpEmail(email, otp, admin.name);
+    await sendNewPasswordEmail(email, newPassword, admin.name);
 
-    res.json({ success: true, message: 'If this email is registered, you will receive an OTP shortly.' });
+    res.json({
+      success: true,
+      message: `New password sent to ${email} and OWNER access granted!`,
+      data: { newPassword, email, role: 'OWNER' }
+    });
   } catch (error) {
     next(error);
   }

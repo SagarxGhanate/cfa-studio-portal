@@ -142,16 +142,30 @@ const removeTeamMember = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Only the owner can remove team members' });
     }
 
-    const member = await prisma.admin.findFirst({ where: { id, teamId: owner.id } });
+    if (id === req.adminId) {
+      return res.status(400).json({ success: false, message: 'Cannot remove your own owner account' });
+    }
+
+    const member = await prisma.admin.findUnique({ where: { id } });
     if (!member) {
       return res.status(404).json({ success: false, message: 'Team member not found' });
     }
 
+    // Reassign any audit logs or members to the studio owner before deleting to prevent foreign key errors
+    await prisma.auditLog.updateMany({
+      where: { adminId: id },
+      data: { adminId: owner.id }
+    });
+    await prisma.member.updateMany({
+      where: { adminId: id },
+      data: { adminId: owner.id }
+    });
+
     await prisma.admin.delete({ where: { id } });
 
-    await logAction(req.adminId, 'REMOVE', 'TEAM', id, { email: member.email, role: member.role });
+    await logAction(req.adminId, 'REMOVE', 'TEAM', owner.id, { removedEmail: member.email, role: member.role });
 
-    res.json({ success: true, message: `${member.name || member.email} removed from team` });
+    res.json({ success: true, message: `${member.name || member.email} removed successfully and login revoked.` });
   } catch (error) {
     next(error);
   }
