@@ -11,6 +11,11 @@ const Profile = () => {
   const { theme } = useThemeStore();
   const isDark = theme === 'dark';
   const [profileData, setProfileData] = useState(null);
+  const [nameInput, setNameInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [timezoneInput, setTimezoneInput] = useState('India Standard Time (IST)');
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   // Fetch fresh profile data from backend
   useEffect(() => {
@@ -29,6 +34,36 @@ const Profile = () => {
   }, []);
 
   const displayUser = profileData || user;
+
+  useEffect(() => {
+    if (displayUser?.name) setNameInput(displayUser.name);
+    if (displayUser?.phone) setPhoneInput(displayUser.phone);
+    if (displayUser?.timezone) setTimezoneInput(displayUser.timezone);
+  }, [displayUser]);
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    setSaving(true);
+    setSaveMessage('');
+    try {
+      const res = await api.patch('/auth/profile', {
+        name: nameInput,
+        phone: phoneInput,
+        timezone: timezoneInput,
+      });
+      if (res.data.success) {
+        setProfileData(res.data.data);
+        setUser(res.data.data);
+        setSaveMessage('Profile updated successfully! Dashboard will reflect instantly.');
+        setTimeout(() => setSaveMessage(''), 4000);
+      }
+    } catch (err) {
+      setSaveMessage(err.response?.data?.message || 'Failed to update profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const memberDate = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
   const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUser?.name || 'Admin')}&background=FF6B1A&color=fff&size=200&bold=true&font-size=0.4`;
@@ -84,19 +119,27 @@ const Profile = () => {
         </div>
 
         {/* Edit Profile Form */}
-        <div className={`rounded-3xl p-8 relative overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] shadow-[0_10px_40px_rgba(0,0,0,0.3)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_4px_20px_rgba(0,0,0,0.06)]'}`}>
+        <form onSubmit={handleSave} className={`rounded-3xl p-8 relative overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] shadow-[0_10px_40px_rgba(0,0,0,0.3)]' : 'bg-white border border-[rgba(0,0,0,0.06)] shadow-[0_4px_20px_rgba(0,0,0,0.06)]'}`}>
           {/* Decorative background glow */}
           <div className={`absolute top-0 right-0 w-[300px] h-[300px] rounded-full blur-[80px] pointer-events-none ${isDark ? 'bg-[#f97316]/5' : 'bg-[#f97316]/3'}`}></div>
 
           <h2 className={`text-[20px] font-bold mb-6 relative z-10 ${isDark ? 'text-white' : 'text-[#1a1a2e]'}`}>Personal Information</h2>
           
+          {saveMessage && (
+            <div className={`mb-6 p-4 rounded-xl text-[14px] font-medium transition-all relative z-10 ${saveMessage.includes('success') ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
+              {saveMessage}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
             <div className="flex flex-col gap-2">
               <label className="text-[13px] text-[#6B6B80] font-medium">Full Name</label>
               <input 
                 type="text" 
-                defaultValue={displayUser?.name || 'Admin User'}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
                 className={`h-[44px] rounded-xl px-4 text-[14px] outline-none transition-all focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-white' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
+                required
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -112,30 +155,48 @@ const Profile = () => {
               <label className="text-[13px] text-[#6B6B80] font-medium">Phone Number (Optional)</label>
               <input 
                 type="tel" 
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
                 placeholder="+91 00000 00000"
                 className={`h-[44px] rounded-xl px-4 text-[14px] outline-none transition-all focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-white placeholder:text-[#555]' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e] placeholder:text-[#aaa]'}`}
               />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-[13px] text-[#6B6B80] font-medium">Timezone</label>
-              <select className={`h-[44px] rounded-xl px-4 text-[14px] outline-none appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-white' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}>
-                <option>Pacific Time (US & Canada)</option>
-                <option>Eastern Time (US & Canada)</option>
-                <option>London</option>
-                <option selected>India Standard Time (IST)</option>
+              <select 
+                value={timezoneInput}
+                onChange={(e) => setTimezoneInput(e.target.value)}
+                className={`h-[44px] rounded-xl px-4 text-[14px] outline-none appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] ${isDark ? 'bg-[#262626] border border-[rgba(255,255,255,0.08)] text-white' : 'bg-[#F0F0F5] border border-[rgba(0,0,0,0.08)] text-[#1a1a2e]'}`}
+              >
+                <option value="Pacific Time (US & Canada)">Pacific Time (US & Canada)</option>
+                <option value="Eastern Time (US & Canada)">Eastern Time (US & Canada)</option>
+                <option value="London">London</option>
+                <option value="India Standard Time (IST)">India Standard Time (IST)</option>
               </select>
             </div>
           </div>
 
           <div className="mt-8 flex justify-end gap-3 relative z-10">
-            <button className={`px-6 py-2.5 rounded-xl text-[14px] font-medium transition-colors ${isDark ? 'text-white hover:bg-[rgba(255,255,255,0.05)]' : 'text-[#1a1a2e] hover:bg-[rgba(0,0,0,0.04)]'}`}>
+            <button 
+              type="button"
+              onClick={() => {
+                setNameInput(displayUser?.name || '');
+                setPhoneInput(displayUser?.phone || '');
+                setTimezoneInput(displayUser?.timezone || 'India Standard Time (IST)');
+                setSaveMessage('');
+              }}
+              className={`px-6 py-2.5 rounded-xl text-[14px] font-medium transition-colors ${isDark ? 'text-white hover:bg-[rgba(255,255,255,0.05)]' : 'text-[#1a1a2e] hover:bg-[rgba(0,0,0,0.04)]'}`}>
               Cancel
             </button>
-            <button className="px-6 py-2.5 bg-[#f97316] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-xl text-[14px] font-medium text-white shadow-[0_4px_14px_rgba(255,107,26,0.4)]">
-              Save Changes
+            <button 
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2.5 bg-[#f97316] hover:bg-[#e85a0d] active:scale-[0.98] transition-all rounded-xl text-[14px] font-medium text-white shadow-[0_4px_14px_rgba(255,107,26,0.4)] disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
-        </div>
+        </form>
       </main>
       <BottomNav />
     </div>

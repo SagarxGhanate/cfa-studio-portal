@@ -92,7 +92,7 @@ const Dashboard = () => {
         <section className="relative w-full rounded-xl bg-[#1a1a1a] card-border p-8 md:p-12">
           <div className="relative z-10 max-w-2xl">
             <h1 className="font-display-lg text-display-lg text-on-surface mb-4">
-              {isFirstVisit ? 'Welcome' : 'Welcome back'}{user?.role !== 'OWNER' ? `, ${user?.role ? user.role.charAt(0) + user.role.slice(1).toLowerCase() : ''}` : ','} {user?.name || ''}
+              {`${isFirstVisit ? 'Welcome' : 'Welcome back'}${user?.role && user?.role !== 'OWNER' ? `, ${user.role.charAt(0) + user.role.slice(1).toLowerCase()} ` : ', '}${user?.name || ''}`}
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-lg">
               Monitor your studio's performance, manage active member sessions, and scale your creative portfolio from a single command center.
