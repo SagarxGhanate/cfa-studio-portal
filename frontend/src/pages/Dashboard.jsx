@@ -98,27 +98,36 @@ const Dashboard = () => {
               Monitor your studio's performance, manage active member sessions, and scale your creative portfolio from a single command center.
             </p>
             {!isViewer && (
-              <div className="relative inline-block" ref={addMenuRef}>
-                <button
-                  onClick={() => setShowAddMenu(prev => !prev)}
-                  className="inline-flex bg-primary-container text-[#EEEEF0] px-6 py-2 h-[36px] rounded-lg font-label-md text-label-md hover:opacity-90 transition-all items-center gap-2 active:scale-95"
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative inline-block" ref={addMenuRef}>
+                  <button
+                    onClick={() => setShowAddMenu(prev => !prev)}
+                    className="inline-flex bg-primary-container text-[#EEEEF0] px-6 py-2 h-[36px] rounded-lg font-label-md text-label-md hover:opacity-90 transition-all items-center gap-2 active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    Add Member
+                    <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                  </button>
+                  {showAddMenu && (
+                    <div className="absolute left-[calc(100%+12px)] top-0 w-[220px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
+                      <Link to="/members/add" onClick={() => setShowAddMenu(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium border-b border-[rgba(255,255,255,0.05)]">
+                        <span className="material-symbols-outlined text-[18px] text-primary-container">person_add</span>
+                        Add Manually
+                      </Link>
+                      <Link to="/members/import" onClick={() => setShowAddMenu(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium">
+                        <span className="material-symbols-outlined text-[18px] text-secondary">upload_file</span>
+                        Import from Excel
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <Link
+                  to="/attendance"
+                  className="inline-flex bg-[#1a1a1a] border border-primary-container/30 text-primary-container px-5 py-2 h-[36px] rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-all items-center gap-2 active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  Add Member
-                  <span className="material-symbols-outlined text-[16px]">expand_more</span>
-                </button>
-                {showAddMenu && (
-                  <div className="absolute left-[calc(100%+12px)] top-0 w-[220px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
-                    <Link to="/members/add" onClick={() => setShowAddMenu(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium border-b border-[rgba(255,255,255,0.05)]">
-                      <span className="material-symbols-outlined text-[18px] text-primary-container">person_add</span>
-                      Add Manually
-                    </Link>
-                    <Link to="/members/import" onClick={() => setShowAddMenu(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[13px] text-[#EEEEF0] font-medium">
-                      <span className="material-symbols-outlined text-[18px] text-secondary">upload_file</span>
-                      Import from Excel
-                    </Link>
-                  </div>
-                )}
+                  <span className="material-symbols-outlined text-[18px]">event_available</span>
+                  Add Attendance
+                </Link>
               </div>
             )}
           </div>

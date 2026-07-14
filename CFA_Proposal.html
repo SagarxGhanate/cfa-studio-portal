@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFA Digital Package - Proposal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb;
+        }
+        .page {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 8px solid #f97316;
+            border-radius: 8px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        .title h1 {
+            margin: 0;
+            color: #111827;
+            font-size: 32px;
+            letter-spacing: -0.5px;
+        }
+        .title p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 16px;
+        }
+        .date {
+            text-align: right;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        h2 {
+            color: #111827;
+            font-size: 20px;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .item-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        .item-details {
+            width: 80%;
+        }
+        .item-title {
+            font-weight: 600;
+            color: #111827;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .item-desc {
+            color: #4b5563;
+            font-size: 14px;
+            margin: 0;
+        }
+        .item-price {
+            font-weight: 600;
+            color: #111827;
+            font-size: 16px;
+        }
+        .sub-bullet {
+            margin-top: 8px;
+            padding-left: 20px;
+            list-style-type: disc;
+            color: #4b5563;
+            font-size: 13px;
+        }
+        .sub-bullet li {
+            margin-bottom: 4px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid #111827;
+            padding-top: 20px;
+            margin-top: 40px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .footer-note {
+            margin-top: 60px;
+            padding: 20px;
+            background: #fef8f2;
+            border-left: 4px solid #f97316;
+            color: #9a4710;
+            font-size: 14px;
+        }
+        /* Hide UI elements when printing */
+        @media print {
+            body { background: white; margin: 0; }
+            .page { box-shadow: none; margin: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="title">
+                <h1>Project Proposal</h1>
+                <p>CFA Digital Transformation Package</p>
+            </div>
+            <div class="date">
+                <strong>Date:</strong> <span id="currentDate"></span><br>
+                <strong>Prepared for:</strong> CFA Studio
+            </div>
+        </div>
+
+        <p style="color: #4b5563; margin-bottom: 40px;">
+            This proposal outlines the one-time setup and development costs for the complete end-to-end digital package, including the public marketing website and the private CRM database portal.
+        </p>
+
+        <h2>Investment Breakdown</h2>
+
+        <ul class="item-list">
+            <!-- Item 1 -->
+            <li class="item">
+                <div class="item-details">
+                    <div class="item-title">1. Public Marketing Website</div>
+                    <p class="item-desc">Complete design, development, and deployment of the public-facing studio website.</p>
+                    <ul class="sub-bullet">
+                        <li><strong>Domain & Deployment:</strong> Includes custom domain registration and Global CDN setup for fast loading.</li>
+                        <li><strong>Custom UI/UX:</strong> Fully responsive, high-end design with dynamic animations to convert traffic.</li>
+                    </ul>
+                </div>
+                <div class="item-price">$200.00</div>
+            </li>
+
+            <!-- Item 2 -->
+            <li class="item">
+                <div class="item-details">
+                    <div class="item-title">2. Custom CRM Database & Admin Portal</div>
+                    <p class="item-desc">Bespoke backend architecture, database provisioning, and private admin software.</p>
+                    <ul class="sub-bullet">
+                        <li><strong>Cloud Infrastructure:</strong> Dedicated backend server provisioning and premium PostgreSQL database with automated daily backups.</li>
+                        <li><strong>Security & Authentication:</strong> Google OAuth integration, encrypted OTP Email Gateway, and hidden Audit Log engine.</li>
+                        <li><strong>Software Development:</strong> Full member management system, dynamic analytics dashboard, and Role-Based Access Control (Owner/Manager/Viewer).</li>
+                    </ul>
+                </div>
+                <div class="item-price">$500.00</div>
+            </li>
+        </ul>
+
+        <div style="background-color: #fff7ed; border: 2px dashed #f97316; padding: 20px; text-align: center; margin-top: 30px; margin-bottom: 10px; border-radius: 8px;">
+            <h3 style="color: #ea580c; margin: 0; font-size: 22px;">Transparent Pricing Notice</h3>
+            <p style="color: #9a3412; margin: 8px 0 15px; font-size: 16px;">
+                Included in this total is a <strong>$150.00 Out-of-Pocket Investment</strong> to get you live. My actual development fee for building both platforms is only $550.00.
+            </p>
+            <div style="display: inline-block; text-align: left; background: #ffedd5; padding: 15px 25px; border-radius: 6px; font-size: 14px; color: #9a3412; line-height: 1.8;">
+                <strong>Infrastructure Breakdown:</strong><br>
+                • Domain Name & SSL Security: <strong>$25</strong><br>
+                • Dedicated Server Provisioning: <strong>$35</strong><br>
+                • Database Initialization & Backups: <strong>$45</strong><br>
+                • Secure Auth & API Gateways: <strong>$45</strong><br>
+                <em>Total Hard Costs: $150</em>
+            </div>
+        </div>
+
+        <div class="total-row">
+            <div>Total One-Time Setup</div>
+            <div style="color: #f97316;">$700.00</div>
+        </div>
+
+        <div class="footer-note">
+            <strong>Note on Value:</strong> Traditional software agencies typically charge upwards of $6,000 for a custom website paired with a fully functional bespoke CRM database. The development fee has been heavily reduced to establish a long-term technology partnership with CFA Studio.
+        </div>
+    </div>
+
+    <script>
+        // Auto-fill today's date
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+    </script>
+</body>
+</html>

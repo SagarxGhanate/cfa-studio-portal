@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const memberRoutes = require('./routes/memberRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const teamRoutes = require('./routes/teamRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 dotenv.config();
@@ -69,6 +70,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -18,6 +18,7 @@ import NotFound from './pages/NotFound';
 import ForgotPassword from './pages/ForgotPassword';
 import AuditLog from './pages/AuditLog';
 import Team from './pages/Team';
+import Attendance from './pages/Attendance';
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -41,6 +42,7 @@ const PAGE_TITLES = {
   '/profile': 'Profile',
   '/audit-log': 'Activity Log',
   '/team': 'Team Management',
+  '/attendance': 'Add Attendance',
 };
 
 const PageTitleUpdater = () => {
@@ -146,6 +148,10 @@ const App = () => {
             <Route 
               path="/team" 
               element={<ProtectedRoute><Team /></ProtectedRoute>} 
+            />
+            <Route 
+              path="/attendance" 
+              element={<ProtectedRoute><Attendance /></ProtectedRoute>} 
             />
             {/* 404 catch-all */}
             <Route path="*" element={<NotFound />} />

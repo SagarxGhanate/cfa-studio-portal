@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import BottomNav from '../components/layout/BottomNav';
+import AttendanceCalendar from '../components/members/AttendanceCalendar';
 import { useToast } from '../components/ui/Toast';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
@@ -12,6 +13,8 @@ const MemberDetail = () => {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showLightbox, setShowLightbox] = useState(false);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
   const toast = useToast();
   const user = useAuthStore((s) => s.user);
   const isViewer = user?.role === 'VIEWER';
@@ -31,6 +34,26 @@ const MemberDetail = () => {
     };
     fetchMember();
   }, [id]);
+
+  // Fetch attendance records for PERSONAL members
+  useEffect(() => {
+    if (member && member.classType === 'PERSONAL') {
+      const fetchAttendance = async () => {
+        setAttendanceLoading(true);
+        try {
+          const res = await api.get(`/attendance/${id}`);
+          if (res.data.success) {
+            setAttendanceRecords(res.data.data.records);
+          }
+        } catch (err) {
+          console.error('Failed to fetch attendance:', err);
+        } finally {
+          setAttendanceLoading(false);
+        }
+      };
+      fetchAttendance();
+    }
+  }, [member, id]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this member?')) {
@@ -278,6 +301,33 @@ const MemberDetail = () => {
                 <DetailRow icon="phone_forwarded" label="Guardian Phone" value={member.guardianPhone} />
               )}
             </div>
+          </section>
+        )}
+
+        {/* ━━━ Attendance Calendar ━━━ */}
+        {member.classType === 'PERSONAL' && (
+          <section className="rounded-2xl bg-[#1a1a1a] border border-white/[0.06] p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-primary-container text-[18px]">event_available</span>
+              <h3 className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#78716c]">Attendance Record</h3>
+            </div>
+            {attendanceLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <span className="material-symbols-outlined animate-spin text-[24px] text-[#6B6B80]">progress_activity</span>
+              </div>
+            ) : attendanceRecords.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <span className="material-symbols-outlined text-[40px] text-[#6B6B80]/20 mb-3">calendar_today</span>
+                <p className="text-[13px] text-[#6B6B80]">No attendance records yet</p>
+              </div>
+            ) : (
+              <AttendanceCalendar
+                records={attendanceRecords}
+                readOnly={true}
+                showFullYear={true}
+                accentColor="#f97316"
+              />
+            )}
           </section>
         )}
 
