@@ -10,7 +10,8 @@
     "migrate": "npx prisma migrate dev",
     "migrate:deploy": "npx prisma migrate deploy",
     "generate": "npx prisma generate",
-    "test": "jest --forceExit --detectOpenHandles"
+    "test": "jest --forceExit --detectOpenHandles",
+    "postinstall": "npx prisma generate"
   },
   "jest": {
     "testEnvironment": "node",
